@@ -461,158 +461,166 @@ Return ONLY a valid JSON object matching this structure:
     // These two lines make the variables accessible to ALL functions
     let doc;
     let wordContent;
-        function exportPDF() {
-            if (!window.generatedData) { alert("Please compile a matrix first!"); return; }
-             { jsPDF } = window.jspdf;
-             doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-             d = window.generatedData;
-            let y = 15;
 
-            // Helper function to sanitize text strings from hidden copy-paste characters
-            const sanitizeText = (text) => {
-                if (!text) return "";
-                return text
-                    .replace(/[\u200B-\u200D\uFEFF]/g, "") // Removes zero-width spaces
-                    .replace(/[^\x20-\x7E\u00A0-\u00FF\u0100-\u017F\u0400-\u04FF]/g, " ") // Validates normal spectrum printable text
-                    .replace(/\s+/g, " ")
-                    .trim();
-            };
+    // Helper function to sanitize text strings from hidden copy-paste characters
+    const sanitizeText = (text) => {
+        if (!text) return "";
+        return text
+            .replace(/[\u200B-\u200D\uFEFF]/g, "") // Removes zero-width spaces
+            .replace(/[^\x20-\x7E\u00A0-\u00FF\u0100-\u017F\u0400-\u04FF]/g, " ") // Validates normal spectrum printable text
+            .replace(/\s+/g, " ")
+            .trim();
+    };
 
-            // Header Elements
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "normal");
-            doc.text("Republic of the Philippines", 105, y, { align: "center" }); y += 5;
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(11);
-            doc.text("Department of Education", 105, y, { align: "center" }); y += 6;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            if(d.region) { doc.text(sanitizeText(d.region), 105, y, { align: "center" }); y += 5; }
-            if(d.division) { doc.text(sanitizeText(d.division), 105, y, { align: "center" }); y += 5; }
-            if(d.school) { doc.text(sanitizeText(d.school), 105, y, { align: "center" }); y += 8; }
-            doc.setFont("helvetica", "bold");
-            doc.text(`${sanitizeText(d.subject)} - ${sanitizeText(d.grade)} (${sanitizeText(d.quarter)} ${sanitizeText(d.testType)})`, 105, y, { align: "center" }); y += 5;
-            doc.setFont("helvetica", "normal");
-            if(d.sy) doc.text(sanitizeText(d.sy), 105, y, { align: "center" }); y += 8;
-
-            doc.setFont("helvetica", "bold").setFontSize(11);
-            doc.text("TABLE OF SPECIFICATIONS", 105, y, { align: "center" }); y += 5;
-
-            doc.autoTable({
-                startY: y,
-                head: [["No.", "Learning Competency Description", "%", "Items", "Range", "Rem", "Und", "App", "Ana", "Eva", "Cre"]],
-                body: d.tosData.map(r => [
-                    r.no, 
-                    sanitizeText(r.competency), 
-                    `${r.percent}%`, 
-                    r.items, 
-                    r.range,
-                    r.cog.remembering || "", 
-                    r.cog.understanding || "", 
-                    r.cog.applying || "",
-                    r.cog.analyzing || "", 
-                    r.cog.evaluating || "", 
-                    r.cog.creating || ""
-                ]),
-                foot: [["Total", "", "100%", d.total, `1-${d.total}`, d.cogTotal.remembering, d.cogTotal.understanding, d.cogTotal.applying, d.cogTotal.analyzing, d.cogTotal.evaluating, d.cogTotal.creating]],
-                theme: "grid",
-                styles: { fontSize: 8, cellPadding: 2, textColor: "#111111", font: "helvetica" },
-                headStyles: { fillColor: "#f3f4f6", textColor: "#111111", fontStyle: "bold" },
-                footStyles: { fillColor: "#16a34a", textColor: "#ffffff", fontStyle: "bold" },
-                columnStyles: {
-                    1: { cellWidth: 65 } // Prevent long competency statements from overlapping columns
-                }
-            });
-
-            doc.addPage();
-            y = 20;
-            doc.setFont("helvetica", "bold").setFontSize(12);
-            doc.text("TEST QUESTIONS", 105, y, { align: "center" }); y += 10;
-            doc.setFont("helvetica", "normal").setFontSize(10);
-            doc.text(d.outputLang === "Tagalog" ? "Panuto: Basahing mabuti ang bawat tanong at piliin ang pinakatamang sagot." : "Directions: Read each item carefully and choose the best answer.", 15, y); y += 10;
-
-            d.testItems.forEach(q => {
-                doc.setFont("helvetica", "bold");
-                const stem = `${q.itemNo}. ${sanitizeText(q.question)}`;
-                const stemLines = doc.splitTextToSize(stem, 180);
-                
-                // Track page vertical overflow dynamically
-                if (y + (stemLines.length * 5) > 275) { doc.addPage(); y = 20; }
-                doc.text(stemLines, 15, y);
-                y += (stemLines.length * 5) + 2;
-
-                doc.setFont("helvetica", "normal");
-                q.options.forEach(opt => {
-                    const cleanOpt = sanitizeText(opt);
-                    const optLines = doc.splitTextToSize(cleanOpt, 170);
-                    
-                    if (y + (optLines.length * 5) > 275) { doc.addPage(); y = 20; }
-                    doc.text(optLines, 22, y);
-                    y += (optLines.length * 5) + 1;
-                });
-                y += 3;
-            });
-
-            if (y + 40 > 275) { doc.addPage(); y = 20; } else { y += 10; }
-            
-            doc.setFont("helvetica", "bold").setFontSize(12);
-            doc.text("ANSWER KEY", 15, y); y += 5;
-            doc.autoTable({
-                startY: y,
-                head: [["Item No.", "Correct Answer Option Key"]],
-                body: d.answerKeys.map(k => [k.no, sanitizeText(k.ans)]),
-                theme: "grid",
-                styles: { fontSize: 10, cellPadding: 2, font: "helvetica" },
-                headStyles: { fillColor: "#f3f4f6", textColor: "#111111" },
-                margin: { left: 15 },
-                tableWidth: 80
-            });
-
-            doc.save(`TOS_Assessment_Portrait.pdf`);
+    function exportPDF() {
+        if (!window.generatedData) { 
+            alert("Please compile a matrix first!"); 
+            return; 
         }
+        // Declare jsPDF properly
+        const { jsPDF } = window.jspdf;
+        doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+        const d = window.generatedData;
+        let y = 15;
 
-        // Reliable Word Document HTML Blob Export (Strictly Portrait, 12pt Font)
-        function exportWord() {
-            if (!window.generatedData) { alert("Please compile a matrix first!"); return; }
-            const d = window.generatedData;
+        // Header Elements
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text("Republic of the Philippines", 105, y, { align: "center" }); y += 5;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text("Department of Education", 105, y, { align: "center" }); y += 6;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        if(d.region) { doc.text(sanitizeText(d.region), 105, y, { align: "center" }); y += 5; }
+        if(d.division) { doc.text(sanitizeText(d.division), 105, y, { align: "center" }); y += 5; }
+        if(d.school) { doc.text(sanitizeText(d.school), 105, y, { align: "center" }); y += 8; }
+        doc.setFont("helvetica", "bold");
+        doc.text(`${sanitizeText(d.subject)} - ${sanitizeText(d.grade)} (${sanitizeText(d.quarter)} ${sanitizeText(d.testType)})`, 105, y, { align: "center" }); y += 5;
+        doc.setFont("helvetica", "normal");
+        if(d.sy) doc.text(sanitizeText(d.sy), 105, y, { align: "center" }); y += 8;
 
-            // Generate clean clean tables and strings matching 12pt portrait
-            let tosRowsHtml = d.tosData.map(r => `
-                <tr>
-                    <td style="text-align:center;">${r.no}</td>
-                    <td>${r.competency}</td>
-                    <td style="text-align:center;">${r.percent}%</td>
-                    <td style="text-align:center; font-weight:bold;">${r.items}</td>
-                    <td style="text-align:center;">${r.range}</td>
-                    <td style="text-align:center;">${r.cog.remembering || ""}</td>
-                    <td style="text-align:center;">${r.cog.understanding || ""}</td>
-                    <td style="text-align:center;">${r.cog.applying || ""}</td>
-                    <td style="text-align:center;">${r.cog.analyzing || ""}</td>
-                    <td style="text-align:center;">${r.cog.evaluating || ""}</td>
-                    <td style="text-align:center;">${r.cog.creating || ""}</td>
-                </tr>
-            `).join("");
+        doc.setFont("helvetica", "bold").setFontSize(11);
+        doc.text("TABLE OF SPECIFICATIONS", 105, y, { align: "center" }); y += 5;
 
-            let questionsHtml = d.testItems.map(q => `
-                <div style="margin-bottom:14pt;">
-                    <p style="margin:0 0 4pt 0;"><strong>${q.itemNo}. ${q.question}</strong></p>
-                    <div style="margin-left:24pt;">
-                        ${q.options.map(o => `<p style="margin:0 0 2pt 0;">${o}</p>`).join("")}
-                    </div>
+        doc.autoTable({
+            startY: y,
+            head: [["No.", "Learning Competency Description", "%", "Items", "Range", "Rem", "Und", "App", "Ana", "Eva", "Cre"]],
+            body: d.tosData.map(r => [
+                r.no, 
+                sanitizeText(r.competency), 
+                `${r.percent}%`, 
+                r.items, 
+                r.range,
+                r.cog.remembering || "", 
+                r.cog.understanding || "", 
+                r.cog.applying || "",
+                r.cog.analyzing || "", 
+                r.cog.evaluating || "", 
+                r.cog.creating || ""
+            ]),
+            foot: [["Total", "", "100%", d.total, `1-${d.total}`, d.cogTotal.remembering, d.cogTotal.understanding, d.cogTotal.applying, d.cogTotal.analyzing, d.cogTotal.evaluating, d.cogTotal.creating]],
+            theme: "grid",
+            styles: { fontSize: 8, cellPadding: 2, textColor: "#111111", font: "helvetica" },
+            headStyles: { fillColor: "#f3f4f6", textColor: "#111111", fontStyle: "bold" },
+            footStyles: { fillColor: "#16a34a", textColor: "#ffffff", fontStyle: "bold" },
+            columnStyles: {
+                1: { cellWidth: 65 } // Prevent long competency statements from overlapping columns
+            }
+        });
+
+        doc.addPage();
+        y = 20;
+        doc.setFont("helvetica", "bold").setFontSize(12);
+        doc.text("TEST QUESTIONS", 105, y, { align: "center" }); y += 10;
+        doc.setFont("helvetica", "normal").setFontSize(10);
+        doc.text(d.outputLang === "Tagalog" ? "Panuto: Basahing mabuti ang bawat tanong at piliin ang pinakatamang sagot." : "Directions: Read each item carefully and choose the best answer.", 15, y); y += 10;
+
+        d.testItems.forEach(q => {
+            doc.setFont("helvetica", "bold");
+            const stem = `${q.itemNo}. ${sanitizeText(q.question)}`;
+            const stemLines = doc.splitTextToSize(stem, 180);
+            
+            // Track page vertical overflow dynamically
+            if (y + (stemLines.length * 5) > 275) { doc.addPage(); y = 20; }
+            doc.text(stemLines, 15, y);
+            y += (stemLines.length * 5) + 2;
+
+            doc.setFont("helvetica", "normal");
+            q.options.forEach(opt => {
+                const cleanOpt = sanitizeText(opt);
+                const optLines = doc.splitTextToSize(cleanOpt, 170);
+                
+                if (y + (optLines.length * 5) > 275) { doc.addPage(); y = 20; }
+                doc.text(optLines, 22, y);
+                y += (optLines.length * 5) + 1;
+            });
+            y += 3;
+        });
+
+        if (y + 40 > 275) { doc.addPage(); y = 20; } else { y += 10; }
+        
+        doc.setFont("helvetica", "bold").setFontSize(12);
+        doc.text("ANSWER KEY", 15, y); y += 5;
+        doc.autoTable({
+            startY: y,
+            head: [["Item No.", "Correct Answer Option Key"]],
+            body: d.answerKeys.map(k => [k.no, sanitizeText(k.ans)]),
+            theme: "grid",
+            styles: { fontSize: 10, cellPadding: 2, font: "helvetica" },
+            headStyles: { fillColor: "#f3f4f6", textColor: "#111111" },
+            margin: { left: 15 },
+            tableWidth: 80
+        });
+
+        doc.save(`TOS_Assessment_Portrait.pdf`);
+
+        // Update trial count after export
+        updateTrial();
+    }
+
+    // Reliable Word Document HTML Blob Export (Strictly Portrait, 12pt Font)
+    function exportWord() {
+        if (!window.generatedData) { 
+            alert("Please compile a matrix first!"); 
+            return; 
+        }
+        const d = window.generatedData;
+
+        // Generate clean tables and strings matching 12pt portrait
+        const tosRowsHtml = d.tosData.map(r => `
+            <tr>
+                <td style="text-align:center;">${r.no}</td>
+                <td>${sanitizeText(r.competency)}</td>
+                <td style="text-align:center;">${r.percent}%</td>
+                <td style="text-align:center; font-weight:bold;">${r.items}</td>
+                <td style="text-align:center;">${r.range}</td>
+                <td style="text-align:center;">${r.cog.remembering || ""}</td>
+                <td style="text-align:center;">${r.cog.understanding || ""}</td>
+                <td style="text-align:center;">${r.cog.applying || ""}</td>
+                <td style="text-align:center;">${r.cog.analyzing || ""}</td>
+                <td style="text-align:center;">${r.cog.evaluating || ""}</td>
+                <td style="text-align:center;">${r.cog.creating || ""}</td>
+            </tr>
+        `).join("");
+
+        const questionsHtml = d.testItems.map(q => `
+            <div style="margin-bottom:14pt;">
+                <p style="margin:0 0 4pt 0;"><strong>${q.itemNo}. ${sanitizeText(q.question)}</strong></p>
+                <div style="margin-left:24pt;">
+                    ${q.options.map(o => `<p style="margin:0 0 2pt 0;">${sanitizeText(o)}</p>`).join("")}
                 </div>
-            `).join("");
+            </div>
+        `).join("");
 
-            let keyRowsHtml = d.answerKeys.map(k => `
-                <tr>
-                    <td style="text-align:center; font-weight:bold;">${k.no}</td>
-                    <td>${k.ans}</td>
-                </tr>
-            `).join("");
-<script>
-    // DECLARE THESE AT THE VERY TOP
-    let doc;
-    let wordContent;
-            wordContent = `
+        const keyRowsHtml = d.answerKeys.map(k => `
+            <tr>
+                <td style="text-align:center; font-weight:bold;">${k.no}</td>
+                <td>${sanitizeText(k.ans)}</td>
+            </tr>
+        `).join("");
+
+        wordContent = `
 <html xmlns:o="urn:schemas-microsoft-com:office:office"
       xmlns:w="urn:schemas-microsoft-com:office:word"
       xmlns="http://www.w3.org/TR/REC-html40">
@@ -680,12 +688,12 @@ th {
     <div class="header-container">
         <p>Republic of the Philippines</p>
         <p style="font-weight:bold;">Department of Education</p>
-        <p>${d.region || "Region ________"}</p>
-        <p>${d.division || "Schools Division Office of ________"}</p>
-        <p style="font-weight:bold; color:#00529B;">${d.school || "___________ School"}</p>
+        <p>${sanitizeText(d.region) || "Region ________"}</p>
+        <p>${sanitizeText(d.division) || "Schools Division Office of ________"}</p>
+        <p style="font-weight:bold; color:#00529B;">${sanitizeText(d.school) || "___________ School"}</p>
         <div style="margin-top:10pt; font-weight:bold;">
-            <p>${d.subject} - ${d.grade}</p>
-            <p>${d.quarter} ${d.testType} (${d.sy || "S.Y. ____-____"})</p>
+            <p>${sanitizeText(d.subject)} - ${sanitizeText(d.grade)}</p>
+            <p>${sanitizeText(d.quarter)} ${sanitizeText(d.testType)} (${sanitizeText(d.sy) || "S.Y. ____-____"})</p>
         </div>
     </div>
 
@@ -751,41 +759,21 @@ th {
 </div>
 </body>
 </html>
-            `;
+        `;
 
-            const blob = new Blob(['\ufeff', wordContent], {
-                type: 'application/msword;charset=utf-8'
-            });
-            saveAs(blob, `DepEd_Assessment_Matrix_${d.subject}.doc`);
-        }
-    </script>
+        const blob = new Blob(['\ufeff', wordContent], {
+            type: 'application/msword;charset=utf-8'
+        });
+        saveAs(blob, `DepEd_Assessment_Matrix_${sanitizeText(d.subject)}.doc`);
 
-    <script src="trialManager.js"></script>
+        // Update trial count after export
+        updateTrial();
+    }
 
-<script>
     // 1. Initial Access Check
     if (!checkTrialStatus()) {
         window.location.href = "upgrade.html";
     }
-
-    // --- WORD EXPORT LOGIC ---
-    function exportWord() {
-        // ... your existing Word generation logic ...
-        const blob = new Blob(['\ufeff', wordContent], { type: 'application/msword;charset=utf-8' });
-        saveAs(blob, `DepEd_Assessment_Matrix_${d.subject}.doc`);
-
-        // ADD THIS: Increment for Word export
-        updateTrial(); 
-    }
-
-    // --- PDF EXPORT LOGIC ---
-    async function exportPDF() {
-        // ... your existing PDF generation logic ...
-        doc.save("matrix_export.pdf");
-        
-        // ADD THIS: Increment for PDF export
-        updateTrial(); 
-    }
 </script>
-</body>
-</html>
+
+<script src="trialManager.js"></script>
