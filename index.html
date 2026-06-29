@@ -120,5 +120,25 @@
     </footer>
 
     <script src="firebase-config.js"></script>
+    <script src="subscription.js"></script>
+    
+    <script>
+    // This function contains the actual logic your app uses to export
+    function performMyExport() {
+        console.log("Your generator is running...");
+        // YOUR EXISTING GENERATOR CODE GOES HERE
+    }
+
+    // This connects the button to the Subscription Manager
+    document.addEventListener('DOMContentLoaded', () => {
+        const exportBtn = document.getElementById('your-export-button-id');
+        
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                SubscriptionManager.handleExport(performMyExport);
+            });
+        }
+    });
+</script>
 </body>
 </html>
