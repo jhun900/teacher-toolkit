@@ -753,5 +753,33 @@ th {
             saveAs(blob, `DepEd_Assessment_Matrix_${d.subject}.doc`);
         }
     </script>
+
+    <script src="trialManager.js"></script>
+
+<script>
+    // 1. Initial Access Check
+    if (!checkTrialStatus()) {
+        window.location.href = "upgrade.html";
+    }
+
+    // --- WORD EXPORT LOGIC ---
+    function exportWord() {
+        // ... your existing Word generation logic ...
+        const blob = new Blob(['\ufeff', wordContent], { type: 'application/msword;charset=utf-8' });
+        saveAs(blob, `DepEd_Assessment_Matrix_${d.subject}.doc`);
+
+        // ADD THIS: Increment for Word export
+        updateTrial(); 
+    }
+
+    // --- PDF EXPORT LOGIC ---
+    async function exportPDF() {
+        // ... your existing PDF generation logic ...
+        doc.save("matrix_export.pdf");
+        
+        // ADD THIS: Increment for PDF export
+        updateTrial(); 
+    }
+</script>
 </body>
 </html>
