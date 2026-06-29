@@ -457,12 +457,15 @@ Return ONLY a valid JSON object matching this structure:
             status.className = "text-green-600 text-center font-bold";
             btn.disabled = false;
         }
-
+<script>
+    // These two lines make the variables accessible to ALL functions
+    let doc;
+    let wordContent;
         function exportPDF() {
             if (!window.generatedData) { alert("Please compile a matrix first!"); return; }
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-            const d = window.generatedData;
+             { jsPDF } = window.jspdf;
+             doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+             d = window.generatedData;
             let y = 15;
 
             // Helper function to sanitize text strings from hidden copy-paste characters
@@ -605,8 +608,11 @@ Return ONLY a valid JSON object matching this structure:
                     <td>${k.ans}</td>
                 </tr>
             `).join("");
-
-            const wordContent = `
+<script>
+    // DECLARE THESE AT THE VERY TOP
+    let doc;
+    let wordContent;
+            wordContent = `
 <html xmlns:o="urn:schemas-microsoft-com:office:office"
       xmlns:w="urn:schemas-microsoft-com:office:word"
       xmlns="http://www.w3.org/TR/REC-html40">
