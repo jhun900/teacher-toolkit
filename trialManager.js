@@ -1,24 +1,26 @@
-// trialManager.js
-const MAX_TRIALS = 5; // Set your limit here
+<script src="trialManager.js"></script>
 
-const getTrialData = () => {
-    const data = localStorage.getItem('app_trial_count');
-    return data ? JSON.parse(data) : { count: 0 };
-};
-
-const updateTrial = () => {
-    let data = getTrialData();
-    data.count += 1;
-    localStorage.setItem('app_trial_count', JSON.stringify(data));
-    return data.count;
-};
-
-const checkTrialStatus = () => {
-    const data = getTrialData();
-    if (data.count >= MAX_TRIALS) {
-        alert("Trial period expired. Please upgrade.");
-        // Redirect or disable features here
-        return false;
+<script>
+    // 1. Check access on page load
+    if (!checkTrialStatus()) {
+        window.location.href = "upgrade.html";
     }
-    return true;
-};
+
+    // 2. Define your export function
+    async function handleExport() {
+        try {
+            // Perform your export logic here (e.g., API call, file generation)
+            const success = await performExportTask(); 
+
+            if (success) {
+                // ONLY increment here if the export is confirmed successful
+                const newCount = updateTrial();
+                console.log("Export successful! New trial count:", newCount);
+                alert("Export complete!");
+            }
+        } catch (error) {
+            console.error("Export failed:", error);
+            alert("Export failed. No trial credits were used.");
+        }
+    }
+</script>
