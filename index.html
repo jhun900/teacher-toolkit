@@ -24,19 +24,28 @@
             min-height: 100vh;
         }
 
-        /* Navigation Bar */
         nav {
             background: white;
             padding: 15px 40px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .logo { font-weight: bold; color: var(--primary-color); font-size: 1.2rem; }
 
         .container { max-width: 1000px; margin: 40px auto; flex: 1; padding: 0 20px; }
+
+        /* Hero Section */
+        .welcome-section { text-align: center; margin-bottom: 40px; }
+        .welcome-section h1 { color: var(--primary-color); margin-bottom: 10px; }
+        
+        .disclaimer {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            color: #856404;
+        }
 
         .grid {
             display: grid;
@@ -70,7 +79,6 @@
             text-decoration: none;
         }
 
-        /* Footer */
         footer {
             text-align: center;
             padding: 20px;
@@ -87,6 +95,15 @@
     </nav>
 
     <div class="container">
+        <section class="welcome-section">
+            <h1>Welcome to the DepEd Educator's Toolkit</h1>
+            <p>Your go-to platform for faster lesson planning, material creation, and teaching support.</p>
+            
+            <div class="disclaimer">
+                <strong>⚠️ Important Disclaimer:</strong> All generated content and exports are AI-assisted. Please carefully review, verify, and adjust for accuracy, relevance, and alignment with official DepEd standards before printing, sharing, or using in class.
+            </div>
+        </section>
+
         <main class="grid">
             <div class="card">
                 <h3>ILAW Lesson Plan Generator</h3>
@@ -117,23 +134,5 @@
     <footer>
         &copy; 2026 DepEd Educator's Toolkit Portal | All rights reserved.
     </footer>
-
-    <script>
-        // Logic for export without subscription checks
-        function performMyExport() {
-            console.log("Your generator is running...");
-            // YOUR EXISTING GENERATOR CODE GOES HERE
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const exportBtn = document.getElementById('your-export-button-id');
-            
-            if (exportBtn) {
-                exportBtn.addEventListener('click', () => {
-                    performMyExport();
-                });
-            }
-        });
-    </script>
 </body>
 </html>
