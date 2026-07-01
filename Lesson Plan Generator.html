@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepEd Lesson Plan Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-gray-50 p-6">
+
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md border border-gray-200">
+        <header class="border-b pb-4 mb-6">
+            <h1 class="text-2xl font-bold text-blue-900">DepEd Lesson Plan Generator</h1>
+            <p class="text-sm text-gray-600">Realigned to the Three-Term Budget of Work</p>
+        </header>
+
+        <form id="lessonForm" class="space-y-6">
+            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                <h3 class="text-sm font-semibold text-blue-900 uppercase tracking-wider mb-3">Institutional Header Profile</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">Region</label>
+                        <input type="text" id="regionName" class="w-full mt-1 p-2 border rounded text-sm" placeholder="e.g., Region IV-A CALABARZON">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">Division</label>
+                        <input type="text" id="divisionName" class="w-full mt-1 p-2 border rounded text-sm" placeholder="e.g., Division of Laguna">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">District</label>
+                        <input type="text" id="districtName" class="w-full mt-1 p-2 border rounded text-sm" placeholder="e.g., District of Pagsanjan">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700">School Name</label>
+                        <input type="text" id="schoolName" class="w-full mt-1 p-2 border rounded text-sm" placeholder="e.g., San Pedro Elementary School">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium">Lesson Plan Type *</label>
+                    <select id="lessonType" required class="w-full mt-1 p-2 border rounded">
+                        <option value="">Select Type</option>
+                        <option value="5Es (Engage, Explore, Explain, Elaborate, Evaluate)">5Es</option>
+                        <option value="4As (Activity, Analysis, Abstraction, Application)">4As</option>
+                        <option value="7Es (Elicit, Engage, Explore, Explain, Elaborate, Extend, Evaluate)">7Es</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">School Term *</label>
+                    <select id="schoolTerm" required class="w-full mt-1 p-2 border rounded">
+                        <option value="">Select Term</option>
+                        <option value="Term 1">Term 1</option>
+                        <option value="Term 2">Term 2</option>
+                        <option value="Term 3">Term 3</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Grade Level *</label>
+                    <select id="gradeLevel" required class="w-full mt-1 p-2 border rounded" onchange="updateSubjectsByBoW()">
+                        <option value="">Select Grade</option>
+                        <option value="Kindergarten">Kindergarten</option>
+                        <option value="Grade 1">Grade 1</option>
+                        <option value="Grade 2">Grade 2</option>
+                        <option value="Grade 3">Grade 3</option>
+                        <option value="Grade 4">Grade 4</option>
+                        <option value="Grade 5">Grade 5</option>
+                        <option value="Grade 6">Grade 6</option>
+                        <option value="Grade 7">Grade 7</option>
+                        <option value="Grade 8">Grade 8</option>
+                        <option value="Grade 9">Grade 9</option>
+                        <option value="Grade 10">Grade 10</option>
+                        <option value="Grade 11">Grade 11</option>
+                        <option value="Grade 12">Grade 12</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Learning Area *</label>
+                    <select id="subject" required class="w-full mt-1 p-2 border rounded">
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Topic & Target Week *</label>
+                <input type="text" id="topic" required class="w-full mt-1 p-2 border rounded" placeholder="e.g., Quadratic Equations (Week 3)">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Learning Competency (Based on Three-Term Budget of Work) *</label>
+                <textarea id="competency" required class="w-full mt-1 p-2 border rounded h-24" placeholder="Paste specific competency code and narrative sequence description..."></textarea>
+            </div>
+
+            <button type="submit" id="generateBtn" class="bg-blue-900 text-white px-6 py-2 rounded hover:bg-blue-800">Generate Lesson Plan</button>
+        </form>
+
+        <div id="previewArea" class="mt-10 p-6 border-t hidden">
+            <h2 class="text-xl font-bold mb-4">Preview</h2>
+            <div id="outputContent" class="prose max-w-none text-gray-800 bg-white p-6 border rounded shadow-inner overflow-x-auto"></div>
+            <div class="mt-6 flex gap-4">
+                <button onclick="exportToWord()" class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 font-semibold shadow">Export to Word (.docx)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'KaAT0NplWAIcvpl9MDaHLCzgmKGfF1fB';
+
+        const bowSubjectMapping = {
+            "Kindergarten": ["Blocks of Time (All Integrated Domains)"],
+            "Primary": ["Mathematics", "English", "Filipino", "Science", "Araling Panlipunan", "MAPEH", "Edukasyon sa Pagpapakatao (EsP)"],
+            "JuniorHigh": ["Mathematics", "English", "Science", "Filipino", "Araling Panlipunan", "MAPEH", "Edukasyon sa Pagpapakatao (EsP)", "Technology and Livelihood Education (TLE)"],
+            "SeniorHigh": ["Core Curriculum Subjects", "Applied Curriculum Subjects", "Contextualized Learning Areas", "Specialization Track Electives (TVL / Academic / Sports / Arts)"]
+        };
+
+        // Fix language detection base logic
+        function updateSubjectsByBoW() {
+            const grade = document.getElementById('gradeLevel').value;
+            const subjectSelect = document.getElementById('subject');
+            subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+
+            if (!grade) return;
+
+            let categories = [];
+            if (grade === "Kindergarten") {
+                categories = bowSubjectMapping.Kindergarten;
+            } else if (["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6"].includes(grade)) {
+                categories = bowSubjectMapping.Primary;
+            } else if (["Grade 7", "Grade 8", "Grade 9", "Grade 10"].includes(grade)) {
+                categories = bowSubjectMapping.JuniorHigh;
+            } else {
+                categories = bowSubjectMapping.SeniorHigh;
+            }
+
+            categories.forEach(subj => {
+                let opt = document.createElement('option');
+                opt.value = subj;
+                opt.textContent = subj;
+                subjectSelect.appendChild(opt);
+            });
+        }
+
+        document.getElementById('lessonForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('generateBtn');
+            btn.innerText = "Generating Plan...";
+            btn.disabled = true;
+            
+            const region = document.getElementById('regionName').value || "_________________________";
+            const division = document.getElementById('divisionName').value || "_________________________";
+            const district = document.getElementById('districtName').value || "District of _____________";
+            const school = document.getElementById('schoolName').value || "_________________________ Elementary School";
+
+            const type = document.getElementById('lessonType').value;
+            const term = document.getElementById('schoolTerm').value;
+            const grade = document.getElementById('gradeLevel').value;
+            const subject = document.getElementById('subject').value;
+            const topic = document.getElementById('topic').value;
+            const competency = document.getElementById('competency').value;
+
+            // Language Detection Logic matching standard DepEd Medium of Instruction
+            let targetLanguage = "English";
+            if (["Filipino", "Araling Panlipunan", "Edukasyon sa Pagpapakatao (EsP)"].includes(subject)) {
+                targetLanguage = "Filipino";
+            }
+
+            const prompt = `Create a standard, professional DepEd lesson plan with an official institutional header matching these values exactly:
+            Republic of the Philippines
+            Department of Education
+            ${region}
+            ${division}
+            ${district}
+            ${school}
+
+            The lesson plan is designed for ${term} based on the Three-Term Budget of Work rules using the structural framework of ${type} for ${grade} in ${subject}.
+            Topic: ${topic}. 
+            Competency context: ${competency}. 
+
+            CRITICAL LANGUAGE RULE: Because the Learning Area is ${subject}, you MUST write the entire structural text, discussions, script dialogs, and instructional directions in ${targetLanguage}. Keep structural headings (like I. OBJECTIVES, etc.) bilingual if preferred, but details must be purely in ${targetLanguage}.
+
+            Structuring and Layout constraints:
+            1. Return your entire response in standard HTML format. Do not frame it inside block structures like \`\`\`html.
+            2. Follow the standard, concise DepEd structural hierarchy strictly from Objectives down to Assignment. 
+            3. CRITICAL: Do NOT include raw markdown asterisks (like **Text**) anywhere in your response for bolding or structural emphasis. Use standard HTML tags like <b>Text</b> or <strong>Text</strong> instead.
+            4. The output MUST follow this structural sequence and STOP immediately after Assignment (Do NOT generate VI. REMARKS or VII. REFLECTION fields):
+               I. OBJECTIVES (Learning Competencies, Objectives)
+               II. CONTENT (Subject Matter, Learning Resources)
+               III. PROCEDURES (This section must be a table)
+               IV. EVALUATION
+               V. ASSIGNMENT (This must be the absolute final section)
+            5. The III. PROCEDURES block must be structured inside an HTML <table> with layout parameters ('border: 2px solid #1e3a8a; border-collapse: collapse; width: 100%; table-layout: fixed;').
+            6. The procedure table must have exactly 3 explicit columns:
+               - Column 1: "Teacher's Activity" (width distribution approx. 40%)
+               - Column 2: "Learner's Activity" (width distribution approx. 40%)
+               - Column 3: "Annotation" (width distribution approx. 20%)
+            7. Map out all component stages of the chosen model strategy (${type}) as clean, distinct rows inside the procedures table. Provide script dialog sequences ("Teacher says...", "Learners respond...").
+            8. Fill the "Annotation" column ONLY during active concept development steps with integrated teaching philosophy points using the structured STAR approach hierarchy:
+               - Situation: (Lesson challenge)
+               - Task: (Integrated strategy/teaching philosophy choice)
+               - Action: (How it was operationalized)
+               - Result: (Impact on learners)
+            9. CRITICAL EVALUATION RULES: Formulate the assessment in the "IV. EVALUATION" section to fit exactly ONE of the following methods, choosing the strategy that matches the difficulty level and target metrics for ${grade} in ${subject}:
+               - Multiple Choice (with exactly 1 clear correct answer)
+               - Identification
+               - True or False
+               - Matching Items
+               - Modified Identification
+               - True or False formatted with (happy face) or (sad face) as the alternative responses (highly recommended for early elementary/Kindergarten levels)
+               - Short Essay
+               - Explanation
+               - Composition Writing
+               - Observation Checklist
+               Regardless of the format chosen above, you MUST explicitly prefix every single question or test option with its structural test item number as a label (e.g., "1. Alin ang salitang kilos?", "2. Sino ang...", "3. ...").`;
+
+            try {
+                const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: "mistral-small-latest",
+                        messages: [{ role: "user", content: prompt }]
+                    })
+                });
+                const data = await response.json();
+                
+                let rawContent = data.choices[0].message.content;
+                
+                if(rawContent.includes("```html")){
+                    rawContent = rawContent.split("```html")[1].split("```")[0];
+                } else if (rawContent.includes("```")) {
+                    rawContent = rawContent.split("```")[1].split("```")[0];
+                }
+
+                // Programmatically strip out any residual raw markdown asterisks if present
+                rawContent = rawContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                rawContent = rawContent.replace(/\*/g, '');
+
+                document.getElementById('outputContent').innerHTML = rawContent;
+                document.getElementById('previewArea').classList.remove('hidden');
+            } catch (err) { 
+                alert("Generation error encountered. Please check your network connection status."); 
+            }
+            btn.innerText = "Generate Lesson Plan";
+            btn.disabled = false;
+        });
+
+        function exportToWord() {
+            let element = document.getElementById('outputContent').innerHTML;
+            
+            // Safe fallback logic to clean up any remaining markdown asterisks from the text structure
+            element = element.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            element = element.replace(/\*/g, '');
+
+            const docHtml = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <title>DepEd Lesson Plan</title>
+                    <style>
+                        body { 
+                            font-family: 'Century Gothic', sans-serif; 
+                            font-size: 11pt; 
+                            line-height: 1.5; 
+                            color: #000000; 
+                        }
+                        h1, h2, h3, h4 { color: #1e3a8a; font-weight: bold; margin-top: 14pt; margin-bottom: 6pt; }
+                        table { border-collapse: collapse; width: 100%; margin: 14pt 0; table-layout: fixed; }
+                        th, td { border: 1px solid #1e3a8a; padding: 8pt; text-align: left; vertical-align: top; font-size: 10pt; word-wrap: break-word; }
+                        th { background-color: #1e3a8a; color: #ffffff; font-weight: bold; }
+                        p, li { margin-bottom: 6pt; text-align: justify; }
+                    </style>
+                </head>
+                <body>
+                    ${element}
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob(['\ufeff' + docHtml], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'DepEd_Lesson_Plan.doc';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
