@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DepEd Grade-Level Reading Material Generator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+        }
+        body {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1e3a8a;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 24px;
+        }
+        .control-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #334155;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 16px;
+            background-color: white;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-generate {
+            background-color: #2563eb;
+            color: white;
+        }
+        .btn-generate:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-print {
+            background-color: #059669;
+            color: white;
+        }
+        .btn-print:hover {
+            background-color: #047857;
+        }
+        
+        /* Preview Layout */
+        .output-preview {
+            border: 2px dashed #cbd5e1;
+            padding: 40px;
+            border-radius: 8px;
+            background: #ffffff;
+            min-height: 400px;
+        }
+
+        .size-young {
+            font-size: 14pt !important;
+            line-height: 2.0;
+        }
+        .size-older {
+            font-size: 12pt !important;
+            line-height: 1.8;
+        }
+
+        .material-section {
+            margin-bottom: 20px;
+        }
+        .material-title {
+            color: #1e3a8a;
+            border-left: 5px solid #2563eb;
+            padding-left: 10px;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .word-grid {
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 12px;
+            margin-top: 15px;
+        }
+        .word-row {
+            display: table-row;
+        }
+        .word-cell {
+            display: table-cell;
+            padding: 18px 10px;
+            width: 25%;
+            text-align: center;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: #f8fafc;
+        }
+        
+        .list-distributed {
+            margin: 0;
+            padding-left: 25px;
+        }
+        .list-distributed li {
+            margin-bottom: 18px;
+            padding-bottom: 5px;
+        }
+
+        .story-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: justify;
+        }
+        .comprehension-questions {
+            margin-top: 25px;
+        }
+        .question-item {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+        }
+        .options-block {
+            margin-top: 8px;
+            padding-left: 15px;
+        }
+        .option-item {
+            margin-bottom: 6px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            .control-panel, h1 {
+                display: none !important;
+            }
+            .output-preview {
+                border: none;
+                padding: 0;
+            }
+            @page {
+                size: A4;
+                margin: 20mm 15mm;
+            }
+            .word-cell {
+                background-color: transparent !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>DepEd Reading Material Generator</h1>
+    
+    <div class="control-panel">
+        <div class="form-grid">
+            <div>
+                <label for="gradeSelect">Select Targeted Grade Level:</label>
+                <select id="gradeSelect">
+                    <option value="Kinder">Kindergarten</option>
+                    <option value="Grade 1">Grade 1</option>
+                    <option value="Grade 2">Grade 2</option>
+                    <option value="Grade 3">Grade 3</option>
+                    <option value="Grade 4">Grade 4</option>
+                    <option value="Grade 5">Grade 5</option>
+                    <option value="Grade 6">Grade 6</option>
+                    <option value="Grade 7">Grade 7</option>
+                    <option value="Grade 8">Grade 8</option>
+                    <option value="Grade 9">Grade 9</option>
+                    <option value="Grade 10">Grade 10</option>
+                </select>
+            </div>
+            <div>
+                <label for="resourceSelect">Select Type of Reading Resource:</label>
+                <select id="resourceSelect">
+                    <optgroup label="Short 'a' Families">
+                        <option value="fam-ab">Short a (-ab family)</option>
+                        <option value="fam-ad">Short a (-ad family)</option>
+                        <option value="fam-ag">Short a (-ag family)</option>
+                        <option value="fam-am">Short a (-am family)</option>
+                        <option value="fam-an">Short a (-an family)</option>
+                        <option value="fam-ap">Short a (-ap family)</option>
+                        <option value="fam-at">Short a (-at family)</option>
+                    </optgroup>
+                    <optgroup label="Short 'e' Families">
+                        <option value="fam-ed">Short e (-ed family)</option>
+                        <option value="fam-eg">Short e (-eg family)</option>
+                        <option value="fam-en">Short e (-en family)</option>
+                        <option value="fam-et">Short e (-et family)</option>
+                    </optgroup>
+                    <optgroup label="Short 'i' Families">
+                        <option value="fam-ib">Short i (-ib family)</option>
+                        <option value="fam-id">Short i (-id family)</option>
+                        <option value="fam-ig">Short i (-ig family)</option>
+                        <option value="fam-im">Short i (-im family)</option>
+                        <option value="fam-in">Short i (-in family)</option>
+                        <option value="fam-ip">Short i (-ip family)</option>
+                        <option value="fam-it">Short i (-it family)</option>
+                    </optgroup>
+                    <optgroup label="Short 'o' Families">
+                        <option value="fam-ob">Short o (-ob family)</option>
+                        <option value="fam-od">Short o (-od family)</option>
+                        <option value="fam-og">Short o (-og family)</option>
+                        <option value="fam-op">Short o (-op family)</option>
+                        <option value="fam-ot">Short o (-ot family)</option>
+                    </optgroup>
+                    <optgroup label="Short 'u' Families">
+                        <option value="fam-ub">Short u (-ub family)</option>
+                        <option value="fam-ud">Short u (-ud family)</option>
+                        <option value="fam-ug">Short u (-ug family)</option>
+                        <option value="fam-um">Short u (-um family)</option>
+                        <option value="fam-un">Short u (-un family)</option>
+                        <option value="fam-ut">Short u (-ut family)</option>
+                    </optgroup>
+                    <optgroup label="Long Vowel Sounds">
+                        <option value="long-a">Long Vowel Sound: 'a'</option>
+                        <option value="long-e">Long Vowel Sound: 'e'</option>
+                        <option value="long-i">Long Vowel Sound: 'i'</option>
+                        <option value="long-o">Long Vowel Sound: 'o'</option>
+                        <option value="long-u">Long Vowel Sound: 'u'</option>
+                    </optgroup>
+                    <optgroup label="Other Vowel/Consonant Structures">
+                        <option value="dipthongs">Diphthongs</option>
+                        <option value="clusters">Consonant Clusters / Blends</option>
+                    </optgroup>
+                    <optgroup label="Fluency & Text Comprehension">
+                        <option value="phrases">Phrases (20 items)</option>
+                        <option value="sentences">Sentences (20 items)</option>
+                        <option value="short-stories">Short Stories with Comprehension (Infinite Generation)</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn-generate" onclick="generateMaterial()">Generate</button>
+            <button class="btn-print" onclick="exportToPDF()">Export to PDF</button>
+        </div>
+    </div>
+
+    <div id="outputPreview" class="output-preview size-young">
+        <p style="text-align: center; color: #64748b; margin-top: 100px;">Select options above and click "Generate" to construct optimized dynamic A4 materials.</p>
+    </div>
+</div>
+
+<script>
+const phonicsPools = {
+    "fam-ab": ["cab", "lab", "tab", "nab", "gab", "dab", "jab", "crab", "scab", "slab", "blab", "flab", "grab", "stab", "drab", "swab", "cab", "lab", "tab", "grab"],
+    "fam-ad": ["bad", "dad", "lad", "sad", "mad", "pad", "fad", "rad", "glad", "brad", "chad", "clad", "grad", "plaid", "shad", "skad", "bad", "dad", "sad", "glad"],
+    "fam-ag": ["bag", "rag", "tag", "wag", "nag", "sag", "lag", "mag", "flag", "brag", "snag", "stag", "shag", "swag", "drag", "flag", "bag", "rag", "tag", "wag"],
+    "fam-am": ["ham", "jam", "ram", "yam", "dam", "bam", "sam", "clam", "slam", "scam", "cram", "swam", "gram", "wham", "tram", "spam", "ham", "jam", "ram", "sam"],
+    "fam-an": ["can", "fan", "man", "pan", "ran", "tan", "van", "ban", "clan", "plan", "scan", "span", "than", "bran", "flan", "swan", "can", "fan", "man", "pan"],
+    "fam-ap": ["cap", "map", "tap", "lap", "nap", "sap", "gap", "rap", "clap", "flap", "snap", "trap", "wrap", "slap", "strap", "scrap", "cap", "map", "tap", "lap"],
+    "fam-at": ["cat", "mat", "rat", "bat", "sat", "fat", "hat", "pat", "vat", "flat", "chat", "that", "scat", "spat", "brat", "slat", "cat", "mat", "bat", "hat"],
+    "fam-ed": ["bed", "fed", "led", "red", "wed", "ted", "bled", "fled", "pled", "sledge", "shred", "sped", "shed", "red", "bed", "fed", "led", "wed", "fled", "shred"],
+    "fam-eg": ["leg", "peg", "beg", "meg", "egg", "keg", "greg", "dreg", "skeg", "bleg", "leg", "peg", "beg", "keg", "meg", "greg", "egg", "leg", "peg", "beg"],
+    "fam-en": ["den", "hen", "men", "pen", "ten", "ben", "glen", "when", "then", "bren", "den", "hen", "men", "pen", "ten", "glen", "when", "then", "men", "pen"],
+    "fam-et": ["get", "jet", "let", "met", "net", "pet", "set", "vet", "wet", "yet", "bet", "fret", "whet", "bet", "get", "jet", "let", "met", "net", "pet"],
+    "fam-ib": ["bib", "fib", "rib", "nib", "jib", "crib", "glib", "slid", "squib", "bib", "fib", "rib", "nib", "crib", "glib", "bib", "fib", "rib", "nib", "crib"],
+    "fam-id": ["bid", "did", "hid", "kid", "lid", "rid", "sid", "skid", "slid", "chid", "grid", "mid", "bid", "did", "hid", "kid", "lid", "rid", "skid", "slid"],
+    "fam-ig": ["big", "dig", "fig", "gig", "pig", "wig", "rig", "zig", "twig", "swig", "brig", "sprig", "big", "dig", "fig", "pig", "wig", "rig", "twig", "swig"],
+    "fam-im": ["rim", "dim", "him", "tim", "vim", "jim", "brim", "trim", "slim", "swim", "grim", "skim", "prim", "shim", "whim", "rim", "dim", "him", "brim", "trim"],
+    "fam-in": ["bin", "fin", "pin", "sin", "tin", "win", "chin", "shin", "spin", "twin", "skin", "grin", "bin", "fin", "pin", "tin", "win", "chin", "spin", "twin"],
+    "fam-ip": ["dip", "hip", "lip", "nip", "rip", "sip", "tip", "zip", "chip", "flip", "grip", "slip", "snip", "trip", "whip", "skip", "dip", "hip", "lip", "rip"],
+    "fam-it": ["bit", "fit", "hit", "kit", "lit", "pit", "sit", "wit", "quit", "slit", "spit", "skit", "flit", "grit", "bit", "fit", "hit", "lit", "pit", "sit"],
+    "fam-ob": ["bob", "cob", "job", "lob", "mob", "rob", "sob", "blob", "clob", "glob", "snob", "stob", "throb", "bob", "cob", "job", "mob", "rob", "sob", "blob"],
+    "fam-od": ["cod", "god", "nod", "pod", "rod", "sod", "tod", "clod", "plod", "shod", "trod", "cod", "nod", "pod", "rod", "sod", "clod", "plod", "shod", "trod", "god"],
+    "fam-og": ["dog", "fog", "hog", "jog", "log", "bog", "clog", "flog", "frog", "smog", "clog", "dog", "fog", "hog", "jog", "log", "frog", "smog", "bog", "flog"],
+    "fam-op": ["hop", "mop", "pop", "top", "cop", "sop", "chop", "clop", "flop", "glop", "prop", "shop", "slop", "stop", "crop", "drop", "hop", "mop", "pop", "top"],
+    "fam-ot": ["cot", "dot", "got", "hot", "lot", "not", "pot", "rot", "tot", "blot", "clot", "grot", "plot", "shot", "slot", "spot", "trot", "cot", "dot", "hot"],
+    "fam-ub": ["cub", "rub", "sub", "tub", "hub", "nub", "pub", "chub", "club", "grub", "snub", "stub", "cub", "rub", "sub", "tub", "club", "grub", "hub", "pub"],
+    "fam-ud": ["bud", "mud", "cud", "dud", "gud", "pud", "thud", "spud", "stud", "bud", "mud", "dud", "thud", "spud", "stud", "bud", "mud", "dud", "thud", "spud"],
+    "fam-ug": ["bug", "dug", "hug", "jug", "lug", "mug", "pug", "rug", "tug", "chug", "drug", "plug", "slug", "smug", "snug", "bug", "dug", "hug", "jug", "rug"],
+    "fam-um": ["gum", "hum", "mum", "sum", "rum", "bum", "chum", "drum", "plum", "slum", "strum", "swum", "gum", "hum", "sum", "drum", "plum", "chum", "bum", "rum"],
+    "fam-un": ["bun", "fun", "gun", "nun", "pun", "run", "sun", "tun", "spun", "shun", "stun", "bun", "fun", "gun", "run", "sun", "spun", "shun", "stun", "nun"],
+    "fam-ut": ["but", "cut", "gut", "hut", "jut", "nut", "rut", "shut", "smut", "strut", "but", "cut", "gut", "hut", "nut", "rut", "shut", "strut", "but", "cut"],
+    "long-a": ["cake", "bake", "lake", "rake", "tame", "same", "game", "wave", "cave", "save", "late", "date", "gate", "rate", "male", "sale", "tale", "pale", "cane", "lane"],
+    "long-e": ["feed", "seed", "weed", "need", "keep", "deep", "jeep", "peep", "meet", "feet", "beet", "sweet", "leaf", "team", "beam", "seam", "heat", "neat", "meat", "seat"],
+    "long-i": ["kite", "bite", "site", "hide", "ride", "wide", "side", "line", "pine", "nine", "vine", "fine", "mine", "time", "lime", "dime", "ripe", "wipe", "pipe", "five"],
+    "long-o": ["rope", "hope", "cope", "home", "dome", "cone", "bone", "zone", "poke", "woke", "joke", "rose", "nose", "hose", "note", "vote", "boat", "coat", "goat", "road"],
+    "long-u": ["mule", "cute", "tube", "cube", "tune", "dune", "fume", "huge", "pure", "cure", "blue", "clue", "glue", "true", "flute", "brute", "june", "rude", "rule", "duke"],
+    "dipthongs": ["boy", "toy", "cow", "bow", "coin", "join", "loud", "sour", "oil", "soil", "boil", "spoil", "prowl", "frown", "loyal", "voyage", "renown", "amount", "broil", "found", "hound", "foil", "coil", "toil", "gown", "town", "down", "joy"],
+    "clusters": ["frog", "drum", "crab", "spot", "blue", "flag", "green", "stop", "step", "trap", "string", "splash", "spring", "flight", "scratch", "shrimp", "throat", "throne", "black", "clock", "dress", "glass", "plant", "truck", "skate", "snack"]
+};
+
+const stringArrays = {
+    "Kinder": {
+        phrases: ["a fat cat", "sit on the mat", "a red pen", "hop on the tub", "big wet dog", "hot yellow sun", "run to dad", "fox in box", "top of map", "ten tin cans", "bug in mud", "get the net", "hot red pot", "run and win", "sad bad man", "pig can run", "wet red leg", "fin of fish", "cap on head", "bed is wet"],
+        sentences: ["The cat sat on a mat.", "A big pig can run fast.", "The hot sun is out.", "Dad has a red car.", "The cup is on the bed.", "Ben has a pet hen.", "She hid the map.", "A bug is in the mud.", "He has a big net.", "The dog ran to the van.", "The lid is on the pot.", "The kid has a bat.", "A fat rat ran out.", "Get the big rag.", "The pan is very hot.", "A fox sat on a log.", "The man had a wig.", "Mix the wet mud.", "Ten men ran fast.", "Zip up the big bag."]
+    },
+    "Grade 1": {
+        phrases: ["bake a sweet cake", "fly a high kite", "drink fresh milk", "fast running stream", "green grass growing", "soft pink dress", "loud buzzing sound", "bright shiny coin", "under a gray tent", "cold spring water", "warm sand beach", "deep blue pool", "small brown nest", "fast moving truck", "smart young student", "fresh red apple", "clock on wall", "clean white page", "sharp yellow pencil", "sweet smelling rose"],
+        sentences: ["The green frog made a big jump.", "We love to fly our kite at home.", "Drink a glass of cold milk.", "A small bird built a neat nest.", "The lamp is bright on the desk.", "He gave a prompt answer.", "They left a gift on the bench.", "The train went past the gate.", "Mom baked a fresh apple cake.", "A wild fox ran past the camp.", "The children play on the soft grass.", "He found a shiny coin on the track.", "A sweet smelling rose bloomed today.", "We watch the clock on the classroom wall.", "The new truck drove down the gravel road.", "Please write on a clean white page.", "The sharp pencil fell from my hand.", "The cold spring water tasted wonderful.", "She wore a soft pink dress to school.", "A heavy gray tent kept us safe from rain."]
+    },
+    "Grade 2": {
+        phrases: ["a brave young soldier", "across the wide globe", "the splashing water", "a dark wooden bench", "bright glowing stars", "howling midnight wind", "crunching dry leaves", "thick winter blankets", "clear blue stream", "hidden path in woods", "sailing smooth oceans", "climbing rocky hills", "gathering wild flowers", "beautiful golden crown", "ancient stone castle", "singing sweet melodies", "loyal family protector", "carefully tracing maps", "baking delicious bread", "heavy iron gates"],
+        sentences: ["The brave boy ran across the wooden bridge safely.", "We sat on a bench and watched the birds take flight.", "Do not boil the water for too long.", "The ship set sail across the vast global waters.", "A sudden splash startled the little frogs.", "They found the old treasure map hidden inside the trunk.", "The bright moon illuminates the entire backyard.", "The children gathered dry sticks for the warm bonfire.", "She wore a beautiful necklace to the grand party.", "We love to explore new places during our summer vacation.", "The thick winter blankets kept us very warm.", "Dry leaves crunch beneath our heavy boots.", "A clear blue stream flows through the quiet meadow.", "We discovered a hidden path deep within the woods.", "The old king wore a beautiful golden crown.", "The iron gates closed slowly at sunset.", "The choir practiced singing sweet melodies together.", "Our family dog proved to be a loyal protector.", "He spent hours carefully tracing the ancient maps.", "Grandma enjoys baking delicious bread on Sundays."]
+    },
+    "Grade 3": {
+        phrases: ["a loyal and helpful companion", "an exhausting sea voyage", "feel the soothing warmth", "sprint toward the final finish line", "vibrating structural designs", "ancient historical monuments", "mysterious tracking patterns", "carefully protected sanctuaries", "extraordinary patience and skills", "strict basic protection protocols", "flourishing agricultural fields", "developing critical thought patterns", "traditional community gatherings", "innovative laboratory experiments", "preserving native wilderness areas", "systematically organizing dynamic libraries", "navigating rough terrain parameters", "exhibiting absolute focus during execution", "comprehensive structural framework analysis", "cultivating positive civic learning spaces"],
+        sentences: ["The courageous explorer planned a long voyage across the dangerous ocean.", "The athletes had to sprint with all their might toward the finish line.", "The sudden cold wind made us cherish the warmth of the fireplace.", "Our loyal dog remained waiting patiently by the front entrance.", "The complex layout of the building requires careful navigation.", "Environmental guidelines were established to safeguard the forest resources.", "The teacher explained the structural components of a standard sentence.", "They discovered an ancient stone artifact near the riverbank.", "A thriving marine ecosystem supports thousands of unique species.", "We must demonstrate strict adherence to safety rules inside the laboratory.", "Flourishing agricultural fields provide abundant food for the town.", "Developing critical thought processes prepares students for future challenges.", "Traditional community gatherings reinforce shared cultural values.", "The scientists conducted innovative laboratory experiments yesterday.", "Preserving native wilderness areas protects fragile animal habitats.", "She spent the afternoon systematically organizing the library books.", "Vehicles must be equipped to navigate rough terrain fields safely.", "He exhibited absolute focus while solving the complex math equation.", "The team completed a comprehensive structural framework assessment.", "Cultivating positive civic learning spaces enhances student collaboration."]
+    },
+    "Grade 4": {
+        phrases: ["demonstrating extraordinary mental strength", "a strictly confidential agreement among leaders", "the breathtaking acoustic properties of the cathedral", "meticulously checking historical manuscripts", "persistent micro-evolutionary transformations", "uniquely adapted biological systems", "orderly systematic classification patterns", "sustainable community development practices", "navigating through complex resource parameters", "rigorous scientific testing conditions", "anomalous meteorological pressure variants", "fostering high technical competence thresholds", "preserving essential socio-economic stability models", "executing structural emergency response drills", "advocating for cultural heritage conservation", "meticulously analyzing structural compound patterns", "implementing strategic community revitalization projects", "demonstrating robust logical parsing abilities", "optimizing natural baseline tracking algorithms", "mitigating severe operational risk factors"],
+        sentences: ["The historic community center was meticulously designed to withstand severe weather disruptions.", "She demonstrated extraordinary patience while systematically solving the intricate puzzle.", "The school principal strictly enforced the new environmental protection guidelines.", "Astronomers monitored the complex structural transformation of the distant star system.", "The unexpected technical error necessitated a full systematic check of the server.", "They formulated an adaptable framework to manage rural community challenges.", "Vibrant coral reefs are currently experiencing unprecedented environmental stress.", "The research institution requires strict verification of all historical records.", "She articulated her thesis clearly during the national academic competition.", "Ancient engineering practices continue to surprise modern architectural experts.", "Meteorologists analyzed anomalous pressure variations over the northern region.", "Fostering technical competence remains an essential goal of our curriculum.", "The department developed models to preserve socio-economic stability.", "Schools regularly execute structural emergency drills to ensure safety.", "Civic organizations advocate actively for cultural heritage conservation.", "The laboratory technician spent hours analyzing compound molecular patterns.", "They implemented strategic projects to revitalize the local trading center.", "Students must demonstrate robust logical reasoning during examinations.", "Engineers aimed to optimize tracking algorithms for accuracy.", "Managing specific risk factors mitigates dangerous operational failures."]
+    },
+    "Grade 5": {
+        phrases: ["cultivating an inclusive environment for development", "highly persistent atmospheric phenomena", "the complete fulfillment of professional obligations", "advocating for comprehensive financial reforms", "interpreting complex quantitative methodologies", "unprecedented structural expansion models", "preserving biological diversity zones", "rigorous monitoring of macro indicators", "mitigating severe ecological vulnerability", "establishing global communication networks", "coordinating multi-tier organizational tasks", "pioneering sustainable industrial operations guidelines", "synthesizing advanced scientific observations effectively", "safeguarding constitutional civil liberty protections", "executing intricate architectural layouts properly", "systematically reducing bureaucratic procedural delays", "promoting equitable socioeconomic wealth distribution", "evaluating complex pedagogical instruction techniques", "structuring balanced structural design configurations", "modernizing maritime transportation infrastructure links"],
+        sentences: ["Meteorologists carefully monitored the persistent atmospheric pressure anomalies over the eastern coast.", "Cultivating deep civic responsibility remains a core pillar of modern basic education.", "The newly appointed ambassador aimed to advocate for sustainable socioeconomic development policies.", "The research team prioritized the synchronization of all data gathering tools.", "Technological innovations have significantly accelerated global economic integration.", "The local municipality approved a multi-layered environmental protection plan.", "An inclusive educational framework guarantees equal learning opportunities for all.", "The structural integrity of the bridge was verified by independent engineers.", "We must closely monitor indicators to prevent market fluctuations.", "Sustained community participation guarantees the long-term success of the project.", "Administrators coordinate multi-tier tasks to streamline operations.", "The corporation is pioneering modern sustainable industrial operations.", "Chemists succeeded in synthesizing advanced scientific observations data.", "The legal framework prioritizes safeguarding constitutional civil liberties.", "Architects focus on executing intricate layouts with high accuracy.", "The government aimed at systematically reducing procedural delays.", "New economic policies promote equitable socioeconomic distribution patterns.", "Scholars gathered to evaluate complex pedagogical instruction models.", "Engineers designed balanced structural configurations for the high-rise.", "Funds were allocated for modernizing maritime transportation systems."]
+    },
+    "Grade 6": {
+        phrases: ["systematic implementation of structural reforms", "maintaining a highly objective perspective during analysis", "the sovereign governance of independent territories", "bureaucratic modern administration processes", "chronological evaluation of strategic parameters", "intricate conceptual etymological tracking", "comprehensive qualitative documentation guidelines", "mitigating deep systemic inefficiencies", "fostering multi-faceted collaboration frameworks", "reinforcing primary constitutional doctrines", "accelerating industrial production automation capacities", "scrutinizing complex statistical data variances", "pioneering transformative public health interventions", "evaluating historical macro-economic cycles carefully", "formulating progressive tax restructuring policies", "restoring degraded coastal estuary habitats", "orchestrating massive infrastructure modernization projects", "validating empirical scientific testing parameters", "deconstructing archaic pedagogical training models", "upholding strict professional ethical boundaries"],
+        sentences: ["The research paper required a systematic and rigorous review of all chronological historical data.", "Public officials must avoid bureaucratic delays to properly accelerate community infrastructure projects.", "An objective analysis of global macroeconomic indicators reveals a clear pattern of interconnectedness.", "The architectural firm presented a highly innovative plan for urban revitalization.", "Historical archives provide invaluable insight into ancient administrative structures.", "The educational board implemented reforms to enhance literacy outcomes nationwide.", "Economic policies must remain highly adaptable to changing global conditions.", "The team conducted a thorough qualitative assessment of the marine sanctuary.", "Sovereign nations must coordinate efforts to systematically address climate change.", "The committee reached a strategic compromise after lengthy administrative discussions.", "Automation capacities continue to reshape regional manufacturing landscapes.", "Statisticians spent weeks carefully scrutinizing data variance reports.", "The institute pioneered transformative public health intervention systems.", "Economists focused on evaluating historical macro-economic developments.", "The legislature debated progressive tax restructuring proposals.", "Community groups worked tirelessly restoring degraded coastal habitats.", "The ministry is currently orchestrating infrastructure development initiatives.", "Scientists prioritized validating empirical testing metrics this quarter.", "The seminar aimed at deconstructing outdated pedagogical training routines.", "Every certified engineer is bound to uphold strict professional ethical limits."]
+    },
+    "Grade 7": {
+        phrases: ["conducting an exhaustive quantitative assessment", "intermittent operational challenges within the infrastructure", "formulating an adaptable, multi-layered contingency framework", "sophisticated hydraulic engineering principles", "indigenous methodologies for environmental stabilization", "preserving delicate post-territorial equilibrium", "navigating dense algorithmic network structures", "rigorous academic evaluation standards", "mitigating long-term macroeconomic systemic volatility", "reforming outdated legal jurisprudence paradigms", "conceptualizing multi-dimensional socioeconomic indicators", "pioneering non-linear data processing routines", "scrutinizing dense institutional performance audits", "orchestrating unified emergency medical operations", "dismantling systemic bureaucratic operational gridlocks", "advocating for transparent geopolitical border demarcations", "interpreting complex micro-climatic environmental transformations", "standardizing advanced laboratory testing diagnostics", "fostering cross-cultural academic collaboration modules", "interrogating complex constitutional jurisprudence models"],
+        sentences: ["Economists utilize comprehensive quantitative frameworks to accurately forecast long-term market trajectories.", "The engineering firm discovered critical structural vulnerabilities within the urban water infrastructure.", "Civil movements frequently seek to reform archaic legal structures through sustained advocacy.", "The builders of the historical terraces exhibited a profound grasp of soil mechanics.", "An adaptable framework allows institutions to easily manage operational disruptions.", "Sustained agricultural production relies on efficient water allocation techniques.", "Modern computational models can quickly simulate complex atmospheric developments.", "The university established rigorous validation protocols for independent research projects.", "Public infrastructure investment serves as a primary driver of regional development.", "The analytical report emphasized the importance of regular systematic monitoring.", "Researchers focused on conceptualizing multi-dimensional development models.", "Computer scientists are pioneering complex non-linear tracking routines.", "The oversight committee is currently scrutinizing performance audits.", "Hospitals coordinated efforts to orchestrate medical response operations.", "The administration aimed at dismantling operational bottleneck structures.", "International bodies advocate for transparent border definitions.", "Climatologists specialize in interpreting local micro-climatic shifts.", "The health department focused on standardizing diagnostic testing parameters.", "The summit succeeded in fostering cross-cultural educational partnerships.", "Legal scholars enjoy interrogating constitutional interpretation models."]
+    },
+    "Grade 8": {
+        phrases: ["a major shift in contemporary sociological paradigms", "meticulously scrutinizing the authenticity of historic records", "preventing further territorial encroachment through legal measures", "cross-disciplinary synthesis of complex data", "forgotten administrative legal codifications", "synchronization of decentralized network devices", "institutionalized framework validation metrics", "critiquing deep epistemological methodologies", "unprecedented micro-evolutionary adaptations", "interpreting subtle syntactic structural variations", "deconstructing traditional systemic narrative formulas", "pioneering revolutionary biometric security designs", "orchestrating complex socio-political advocacy modules", "evaluating structural micro-economic asset configurations", "formulating unified macroeconomic development policies", "scrutinizing complex computational cryptographic signatures", "safeguarding fragile global ocean systems", "systematically restructuring specialized corporate entities", "interpreting profound historical cultural archetypes", "mitigating deep institutionalized regulatory disparities"],
+        sentences: ["Scholars continue to closely scrutinize the historical text to verify its contextual authenticity.", "The transition toward renewable energy represents a fundamental paradigm shift in global industrial production.", "Local governments must carefully manage urbanization to prevent illegal ecological encroachment.", "The innovative project synthesized principles from both biology and computer engineering.", "Linguists identified unique syntactic variations within the newly discovered manuscript.", "Decentralized database systems require precise timing synchronization across all nodes.", "The research paper offered a comprehensive critique of standard sociological models.", "Sustained institutional support accelerates scientific breakthroughs in public health.", "The committee verified the authenticity of the ancient legal documentation.", "Rapid economic transformations often necessitate immediate constitutional adaptations.", "The dissertation focused on deconstructing traditional historical narratives.", "Security experts are pioneering advanced biometric authentication models.", "Non-profit groups specialize in orchestrating community advocacy programs.", "Financial analysts spent the month evaluating macro asset performance.", "The international council focused on formulating standardized trade frameworks.", "Cybersecurity units specialize in scrutinizing digital cryptographic profiles.", "Global organizations implement strict policies safeguarding ocean habitats.", "The executive board recommended systematically restructuring operational departments.", "Anthropologists dedicated years to interpreting fundamental cultural archetypes.", "New legislations focus entirely on mitigating regulatory enforcement gaps."]
+    },
+    "Grade 9": {
+        phrases: ["acting as a primary catalyst for constitutional reform", "articulating a highly rigorous epistemological hypothesis", "the complex geometric orientations found in crystallography", "accelerated biological speciation indicators", "geographically sequestered natural populations", "mitigating sudden macroeconomic shock factors", "reiterating precise structural evaluation parameters", "evolutionary transformations in ancestral lineages", "interpreting abstract philosophical assumptions", "rigorous deconstruction of traditional narratives", "orchestrating unified global technological standards", "systematically auditing complex corporate performance", "pioneering non-invasive neuro-diagnostic monitoring tools", "safeguarding intellectual property allocation parameters", "formulating comprehensive macro-environmental mitigation strategies", "scrutinizing complex multidimensional matrix configurations", "conceptualizing advanced thermodynamic propulsion physics", "mitigating structural algorithmic data biases", "fostering deep institutional operational resilience", "interpreting profound sociolinguistic behavioral metrics"],
+        sentences: ["The sudden economic crisis acted as a powerful catalyst for comprehensive financial system reforms.", "The lead scientist felt it was necessary to reiterate the parameters of the safety protocol.", "Philosophers must clearly articulate the underlying assumptions of their ethical frameworks.", "Geographical isolation can dramatically accelerate speciation inside fragile ecosystems.", "The research team formulated a comprehensive hypothesis regarding data transmission errors.", "Volcanic activities created unique environmental pressures that forced rapid adaptation.", "The publication offered a rigorous deconstruction of early twentieth-century prose.", "Advanced digital tracking systems provide real-time updates on atmospheric shifts.", "State institutions must maintain transparency to foster deep public trust.", "Socioeconomic data integration provides an objective basis for long-term planning.", "International consortia are orchestrating unified system protocols.", "External agencies are systematically auditing fiscal management units.", "Medical tech firms are pioneering non-invasive monitoring tools.", "New copyright legislation focuses on safeguarding intellectual property.", "Environmentalists focus on formulating broad climate mitigation strategies.", "Data scientists spent months scrutinizing multidimensional matrix rows.", "The research paper specialized in conceptualizing propulsion models.", "Software teams designed updates focused on mitigating search biases.", "The agency prioritized fostering robust operational performance structures.", "Sociologists are currently interpreting modern digital communication habits."]
+    },
+    "Grade 10": {
+        phrases: ["the historic evolution of modern constitutionalism", "extrapolating trends from complex socioeconomic datasets", "analyzing the inherent contradictions within dialectical models", "post-territorial frameworks for global digital governance", "borderless cryptographic transaction verification mechanisms", "obliterating traditional local regulatory structures", "jurisprudence regarding decentralized cloud assets", "balancing civil liberties against state requirements", "rigorous multidisciplinary intellectual inquiries", "systematic deconstruction of institutionalized rhetoric", "pioneering quantum computational calculation paradigms", "orchestrating multi-lateral sovereign economic agreements", "scrutinizing highly complex epistemological frameworks", "safeguarding modern borderless communication infrastructures", "mitigating systemic global supply chain bottlenecks", "conceptualizing advanced cosmological gravity models", "formulating progressive digital asset taxonomy systems", "systematically auditing algorithmic public resource distributions", "deconstructing structural sociological stratification metrics", "fostering comprehensive institutional macroeconomic adaptability"],
+        sentences: ["Legal scholars trace the evolution of modern constitutionalism back to early democratic struggles.", "By carefully extrapolating patterns from historical data, economists can model future market shocks.", "The philosophical discourse aimed to analyze the deep dialectic between individual liberty and state authority.", "Decentralized networks pose unprecedented challenges to established legal jurisprudence.", "The global regulatory agency proposed a modern framework for virtual asset operations.", "Cloud computing architectures have effectively transformed the nature of data storage.", "A multidisciplinary panel evaluated the ethical implications of genetic engineering.", "Analysts uncovered subtle ideological biases while examining institutionalized rhetoric.", "Sustained democratic participation remains vital to check state centralized power.", "The academic journal published a breakthrough study on post-territorial data laws.", "Computer scientists are pioneering complex processing layouts.", "Diplomats succeeded in orchestrating comprehensive regional trade systems.", "The conference focused on scrutinizing foundational analytical models.", "International updates focus on safeguarding communications infrastructure networks.", "New manufacturing strategies aim at mitigating logistics disruption risks.", "Theoretical physicists spent years conceptualizing modern gravity equations.", "The regulatory board specialized in formulating asset tracking taxonomy.", "Civil rights units focus on auditing automatic screening systems.", "The professor dedicated a lecture to deconstructing class stratification.", "Central banks prioritized fostering structural socioeconomic resilience parameters."]
+    }
+};
+
+// Structural blueprints designed for full variety in titles and prose
+const structuralBlueprints = {
+    "Kinder": {
+        names: ["Ben", "Tim", "Sam", "Dan", "Ned", "Mac", "Pam", "Jan"],
+        adjectives: ["glad", "big", "fast", "kind", "smart", "quick", "calm"],
+        pets: ["fat cat", "big pig", "tan dog", "wet fox", "mad rat", "bad bug"],
+        surfaces: ["red rug", "hot mat", "dry bed", "big log", "wet box", "tan cap"],
+        titleContext: ["Day", "Friend", "Pet", "Story", "Spot"]
+    },
+    "Grade 1": {
+        names: ["Leo", "Max", "Sam", "Toby", "Finn", "Nico", "Aris", "Eli"],
+        dogs: ["Spot", "Rex", "Buddy", "Rocky", "Pip", "Zeke", "Dash", "Milo"],
+        locations: ["the green park", "the river stream", "the backyard hill", "the quiet valley", "the country farm", "the mango orchard"],
+        toys: ["a blue flag and a red boat", "a green kite and a yellow ball", "a shiny coin and a gray map", "a white rope and a purple box"],
+        animals: ["a fast frog", "a busy bird", "a small duck", "a wild squirrel", "a tiny lizard", "a jumping cricket"],
+        titlePrefix: ["An Adventure at", "A Sunny Trip to", "The Fun Walk to", "A Quiet Day near", "Exploring"]
+    },
+    "Grade 2": {
+        names: ["Anna", "Elena", "Clara", "Grace", "Maria", "Chloe", "Sarah", "Liza"],
+        items: ["bright gold key", "shiny silver ring", "sparkling crystal stone", "antique brass coin", "carved wooden bead"],
+        spots: ["wooden bench", "green bushes", "stone path", "tall tree root", "old garden gate", "bamboo deck"],
+        finders: ["little puppy", "clever crow", "playful kitten", "friendly squirrel", "wise old owl"],
+        titleFormat: ["Lost on the", "Found near the", "The Secret of the", "A Surprise by the"]
+    },
+    "Grade 3": {
+        villages: ["Mountain Crest", "River Bend", "Green Valley", "Pine Ridge", "Sibuco Springs", "Balayan Ridge"],
+        elders: ["Mang Pedro", "Mang Juan", "Mang Tomas", "Mang Lucas", "Mang Jose", "Mang Rene"],
+        herbs: ["wild berries and medicinal herbs", "sweet honey and organic roots", "native mushrooms and tea leaves", "aromatic barks and wild ginger"],
+        titleCore: ["The Ancient Lessons of", "Preserving Resources in", "The Protective Guidelines of", "Life within"]
+    },
+    "Grade 4": {
+        mountains: ["Mount Makiling", "Mount Banahaw", "Mount Arayat", "Mount Pulag", "Mount Kanlaon", "Mount Matutum"],
+        discoveries: ["endemic species of wild fern", "rare variety of mountain moss", "vibrant canopy orchid flora", "medicinal mountain vine variant"],
+        phenomena: ["vibrated softly during acoustic transitions", "absorbed atmospheric heavy moisture elements", "altered leaf color variants based on thermal patterns", "emitted a distinct tracking scent trigger"],
+        titleStyle: ["Ecological Discoveries on", "Tracking Botanical Systems on", "Scientific Field Observations at", "The Environmental Secrets of"]
+    },
+    "Grade 5": {
+        islands: ["Apo Island", "Siargao Reef", "Coron Sanctuary", "Batanes Basin", "Pamilacan Reserve", "Tubbataha Edge"],
+        ecosystems: ["coral reef networks", "coastal mangrove forests", "estuary marine wetlands", "deep sea seagrass meadows"],
+        titleForm: ["Sustainable Resource Frameworks of", "The Biological Recovery Models of", "Protecting the Marine Frontiers of", "Community Strategies at"]
+    },
+    "Grade 6": {
+        inventors: ["Dr. Fe del Mundo", "Dr. Juan Salcedo", "Dr. Angel Alcala", "Dr. Arturo Alcaraz", "Dr. Paulo Campos"],
+        materials: ["local bamboo rods", "fired native clay blocks", "recycled organic fibers", "pressed agricultural husk sheets"],
+        appliances: ["a pediatric incubator module", "a microbial water filtration drum", "a thermal preservation box", "a solar-powered seed dryer tool"],
+        titleBuild: ["The Engineering Insights of", "Material Re-engineering by", "Grassroots Technological Inventions from", "The Functional Designs of"]
+    },
+    "Grade 7": {
+        monuments: ["The Banaue Rice Terraces", "The Mayon Aqueduct Paths", "The Ifugao Stone Gridways", "The Antique Stone Bridges"],
+        mechanics: ["hydraulics and slope stabilization", "subterranean pressure distribution", "structural gravity loading rules", "interlocking mass load dynamics"],
+        elements: ["stone-and-mud retaining frameworks", "interlocking volcanic slate lines", "bamboo water canal loops", "layered clay foundation tiers"],
+        titleThemes: ["Structural Load Distribution inside", "Architectural Fluid Mechanics of", "The Pre-Modern Layout of", "Analyzing the Integrity of"]
+    },
+    "Grade 8": {
+        fields: ["epigraphy and philology", "archaeo-astronomy and crop physics", "paleo-demography and matrix sorting", "structural socio-linguistics"],
+        artifacts: ["weathered stone tablet segments", "monolithic alignment circles", "petroglyph cavern installations", "ancient ceramic script shards"],
+        discoveries: ["uncovered syntactic structural shifts", "isolated precise equinox vector traces", "mapped seasonal hunting coordinate keys", "decoded historic community trade boundaries"],
+        titleConcept: ["Evaluating Historical Data in", "Analytical Methods Applied to", "Empirical Recoveries and Breakthroughs in", "Contextual Research Models within"]
+    },
+    "Grade 9": {
+        disciplines: ["evolutionary biology models", "biochemical homeostatic models", "thermodynamic cellular transfer chains", "population genetic tracking metrics"],
+        catalysts: ["geographic subgroup sequestration", "precision catalytic enzyme binding", "mitochondrial energy density spikes", "environmental adaptive selective pressures"],
+        results: ["rapid speciation adjustments", "reduced metabolic baseline activation triggers", "optimized macro-cellular stability", "accelerated physiological mutations"],
+        titleStructures: ["Mechanisms of Cellular Adaptation within", "Investigating Homeostatic Catalysts inside", "Simulating Non-Linear Systems in", "Dynamic Response Frameworks under"]
+    },
+    "Grade 10": {
+        systems: ["decentralized data exchange networks", "automated algorithmic administrative structures", "borderless cryptographic protocol ledgers", "decentralized autonomous public cloud nodes"],
+        challenges: ["territorial sovereignty limitations", "unverified embedded profiling metrics", "asymmetric administrative oversight loopholes", "systemic verification data biases"],
+        frameworks: ["post-territorial jurisprudence configurations", "human-aligned transparent algorithmic models", "transnational civil accountability pacts", "cross-border digital enforcement matrices"],
+        titleFinal: ["The Legal Jurisprudence of", "Evolving Regulatory Models for", "Analyzing Accountability Metrics in", "Civil Liberty Frameworks and"]
+    }
+};
+
+function selectRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generateDynamicStory(grade) {
+    const pool = structuralBlueprints[grade];
+    let title = "";
+    let story = "";
+    let questions = [];
+
+    if (grade === "Kinder") {
+        const name = selectRandom(pool.names);
+        const adj = selectRandom(pool.adjectives);
+        const pet = selectRandom(pool.pets);
+        const surf = selectRandom(pool.surfaces);
+        const context = selectRandom(pool.titleContext);
+        
+        title = `The ${adj.charAt(0).toUpperCase() + adj.slice(1)} Lad's ${context}`;
+        story = `${name} is a ${adj} lad. ${name} has a pet ${pet}. The ${pet} sat on a ${surf}. ${name} gave the pet a soft pat on the back.`;
+        
+        questions = [
+            { q: `Who is the story talking about?`, options: [`a. ${name}`, "b. A big fox", "c. A sad man", "d. An old king"], ans: "a" },
+            { q: `What kind of pet does this character have?`, options: ["a. A fast horse", `b. A pet ${pet}`, "c. A little wild fish", "d. A yellow frog"], ans: "b" },
+            { q: `Where did the pet decide to sit?`, options: ["a. Up in a tall green tree", "b. Inside a deep dark hole", `c. On a ${surf}`, "d. Under a heavy cold rock"], ans: "c" },
+            { q: `What action did the character do at the end?`, options: [`a. Gave the pet a soft pat`, "b. Ran away into the house", "c. Fed the pet some hot ham", "d. Put the pet in a wet bag"], ans: "a" },
+            { q: `Which word describes the lad in the text?`, options: ["a. Mad", "b. Bad", `c. ${adj}`, "d. Sad"], ans: "c" }
+        ];
+    }
+    else if (grade === "Grade 1") {
+        const name = selectRandom(pool.names);
+        const dog = selectRandom(pool.dogs);
+        const loc = selectRandom(pool.locations);
+        const toy = selectRandom(pool.toys);
+        const anim = selectRandom(pool.animals);
+        const prefix = selectRandom(pool.titlePrefix);
+        
+        let cleanLoc = loc.replace("the ", "");
+        cleanLoc = cleanLoc.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        
+        title = `${prefix} ${cleanLoc}`;
+        story = `${name} and his very observant dog, ${dog}, decided to walk straight to ${loc}. ${name} carried along ${toy} to enjoy. Suddenly, ${dog} began barking and chased ${anim} across the clearing path. They had wonderful fun together until the late sunset.`;
+        
+        questions = [
+            { q: `Where did the main character go to spend his free afternoon time?`, options: [`a. To ${loc}`, "b. To the village market", "c. To the school hall", "d. To a dark library building"], ans: "a" },
+            { q: `What distinct item set did the character bring along?`, options: ["a. A broad straw hat", "b. A box of crayons", `c. ${toy}`, "d. A heavy fishing rod"], ans: "c" },
+            { q: `What targeted creature did the observant dog encounter and chase?`, options: ["a. A sleeping kitten", `b. ${anim}`, "c. A colorful butterfly", "d. A lazy sheep"], ans: "b" },
+            { q: `What is the name of the observant dog in this text?`, options: [`a. ${dog}`, "b. Rover", "c. Buster", "d. Hunter"], ans: "a" },
+            { q: `How long did the characters have fun together outside?`, options: ["a. Until early morning", "b. For just five quick minutes", `c. Until the late sunset`, "d. Until the heavy rain started"], ans: "c" }
+        ];
+    }
+    else if (grade === "Grade 2") {
+        const name = selectRandom(pool.names);
+        const item = selectRandom(pool.items);
+        const spot = selectRandom(pool.spots);
+        const finder = selectRandom(pool.finders);
+        const format = selectRandom(pool.titleFormat);
+        
+        let cleanSpot = spot.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        title = `${format} ${cleanSpot}`;
+        story = `While walking along the local nature trail, ${name} unfortunately misplaced her precious ${item}. She carefully scanned the grass patches near the ${spot} but could find absolutely nothing. Suddenly, a ${finder} emerged from the brush, safely carrying the exact ${item} in its mouth.`;
+        
+        questions = [
+            { q: `What specific valuable object was lost along the trail?`, options: ["a. A pair of silver boots", `b. A ${item}`, "c. A silk map scroll", "d. A golden compass device"], ans: "b" },
+            { q: `Where did the main character try to look for it first?`, options: ["a. Near the deep riverbank", "b. Inside an old hollow log", `c. Near the ${spot}`, "d. Behind the schoolhouse fence"], ans: "c" },
+            { q: `Which creature successfully located and brought back the item?`, options: ["a. A tiny field mouse", `b. A ${finder}`, "c. A playful brown goat", "d. A farm duck"], ans: "b" },
+            { q: `What was the character doing when the item was lost?`, options: ["a. Riding a fast bicycle", `b. Walking along a local nature trail`, "c. Planting new flower seeds", "d. Drawing inside a notebook"], ans: "b" },
+            { q: `Where did the animal safely hold the object while carrying it?`, options: [`a. In its mouth`, "b. Under its wing", "c. Inside a small basket", "d. On its soft back"], ans: "a" }
+        ];
+    }
+    else if (grade === "Grade 3") {
+        const vil = selectRandom(pool.villages);
+        const elder = selectRandom(pool.elders);
+        const herb = selectRandom(pool.herbs);
+        const core = selectRandom(pool.titleCore);
+        
+        title = `${core} ${vil}`;
+        story = `Deep within the protective, remote slopes of ${vil}, the local residents managed their natural resources in perfect coordination with the changing seasonal rhythms. Every year, families systematically gathered ${herb}. The widely respected community elder, ${elder}, strictly warned the younger generations against extracting these resources excessively, safeguarding long-term environmental survival for the village.`;
+        
+        questions = [
+            { q: `What is the primary setting of this reading text?`, options: ["a. A modern trading city", `b. The remote slopes of ${vil}`, "c. A coastal harbor district", "d. A high mountain fortress school"], ans: "b" },
+            { q: `What specific resources do local families collect each year?`, options: ["a. River silt and quartz deposits", `b. ${herb}`, "c. Hardwood timbers for building", "d. Migratory fish species from pools"], ans: "b" },
+            { q: `Who is the community leader responsible for enforcing the extraction rules?`, options: [`a. Elder ${elder}`, "b. The regional governor", "c. A forest ranger officer", "d. The trade ship master"], ans: "a" },
+            { q: `Why did the leader issue strict warnings to the younger generation?`, options: ["a. To save time for construction projects", "b. To sell resources at higher market rates", `c. To prevent excessive extraction and safeguard survival`, "d. To prepare for an upcoming cultural festival"], ans: "c" },
+            { q: `How do the village residents manage their resources according to the text?`, options: [`a. In perfect coordination with seasonal rhythms`, "b. By importing synthetic items from cities", "c. Using heavy automatic industrial machines", "d. By gathering items only during winter storms"], ans: "a" }
+        ];
+    }
+    else if (grade === "Grade 4") {
+        const mt = selectRandom(pool.mountains);
+        const disc = selectRandom(pool.discoveries);
+        const phen = selectRandom(pool.phenomena);
+        const style = selectRandom(pool.titleStyle);
+        
+        title = `${style} ${mt}`;
+        story = `Scientific explorers traversing the high, misty altitudes of ${mt} recorded an unusual encounter with an alternative ${disc}. Meticulous real-time tracking revealed that these unique living organisms ${phen}. Dr. Santos published a thesis arguing that this specific morphological phenomenon works as an essential defensive adaptation, protecting the local species from sudden ecosystem macro shocks.`;
+        
+        questions = [
+            { q: `On which geographical landmark was the botanical research conducted?`, options: ["a. Mount Apo ridges", "b. Mount Makiling slopes", `c. The misty altitudes of ${mt}`, "d. Mayon volcano baseline fields"], ans: "c" },
+            { q: `What specific discovery caught the primary attention of the scientific team?`, options: [`a. An alternative ${disc}`, "b. A nocturnal mammal variant", "c. Ancient geothermal spring water", "d. Unique magnetic crystal deposits"], ans: "a" },
+            { q: `According to the tracking data, what specific morphological behavior did the organism show?`, options: ["a. It migrated downward towards fields", `b. It ${phen}`, "c. It entered an extensive dormant phase", "d. It dissolved rapidly in acidic soils"], ans: "b" },
+            { q: `Who authored the academic thesis detailing this defensive plant mechanism?`, options: ["a. Dr. Alcala", "b. Dr. Fe del Mundo", `c. Dr. Santos`, "d. Professor Cruz"], ans: "c" },
+            { q: `What is the ultimate purpose of this biological adaptation?`, options: [`a. To protect the species from sudden macro shocks`, "b. To attract local insect pollinators", "c. To accelerate cross-border seed dispersion", "d. To generate clean chemical energy matrices"], ans: "a" }
+        ];
+    }
+    else if (grade === "Grade 5") {
+        const isl = selectRandom(pool.islands);
+        const eco = selectRandom(pool.ecosystems);
+        const form = selectRandom(pool.titleForm);
+        
+        title = `${form} ${isl}`;
+        story = `Across the isolated municipal boundaries of ${isl}, organized community-led groups established a strict marine management program to repair damaged local ${eco}. By constructing permanent no-take boundaries and deploying artificial concrete frameworks, the community successfully catalyzed an unprecedented recovery of structural biodiversity. This sustainable operational model is currently serving as a national blueprint for rural resource management.`;
+        
+        questions = [
+            { q: `Which specific area served as the testbed for the conservation blueprint?`, options: [`a. The municipal borders of ${isl}`, "b. The central plains of Luzon", "c. The urban sectors of Manila", "d. The southern rivers of Mindanao"], ans: "a" },
+            { q: `What particular environmental target did the community groups aim to repair?`, options: ["a. Upland rainforest canopies", `b. Damaged local ${eco}`, "c. Underground river aquifers", "d. Degraded municipal agricultural zones"], ans: "b" },
+            { q: `What structural method was deployed to jumpstart the biological recovery process?`, options: [`a. Constructing permanent no-take boundaries`, "b. Implementing chemical soil treatments", "c. Relocating community residential spaces", "d. Commercial dredging of channel waters"], ans: "a" },
+            { q: `What major ecological outcome resulted from installing the concrete frameworks?`, options: ["a. Increased surface water temperatures", "b. Commercial shipping traffic optimization", `c. An unprecedented recovery of structural biodiversity`, "d. Rapid degradation of coastline sand fields"], ans: "c" },
+            { q: `What is the current broader status of this conservation project model?`, options: ["a. It was permanently discontinued by organizers", "b. It remains completely unverified by science", `c. It serves as a national blueprint for resource management`, "d. It is restricted exclusively to international waters"], ans: "c" }
+        ];
+    }
+    else if (grade === "Grade 6") {
+        const inv = selectRandom(pool.inventors);
+        const mat = selectRandom(pool.materials);
+        const app = selectRandom(pool.appliances);
+        const build = selectRandom(pool.titleBuild);
+        
+        title = `${build} ${inv}`;
+        story = `Faced with acute logistical bottlenecks and a total lack of specialized commercial parts, the research unit led by ${inv} successfully engineered a fully functional version of ${app}. The structural core of this device was crafted entirely out of sustainable ${mat}. This alternative system successfully addressed severe public health hurdles, proving that grassroots material re-engineering can bypass the need for capital-intensive commercial technology chains.`;
+        
+        questions = [
+            { q: `Who is the primary engineer or innovator highlighted in this passage?`, options: ["a. Dr. Jose Rizal", `b. ${inv}`, "c. Architect Juan Nakpil", "d. Professor Ramon Barba"], ans: "b" },
+            { q: `What specific functional device did the research unit manage to build?`, options: ["a. A rural communications transceiver", "b. A tidal energy converter turbine", `c. A functional version of ${app}`, "d. An automated water level monitoring alert"], ans: "c" },
+            { q: `What raw resource material served as the structural core for this device?`, options: ["a. Sheet metals from scrap fields", `b. Sustainable ${mat}`, "c. High-density imported plastics", "d. Fired volcanic ash matrices"], ans: "b" },
+            { q: `What initial problems forced the team to build an alternative device?`, options: [`a. Logistical bottlenecks and lack of specialized commercial parts`, "b. Extreme local climate shifts and flooding", "c. Conflicting directives from regional trade boards", "d. Lack of student enrollment in tech courses"], ans: "a" },
+            { q: `What broader lesson does this innovation prove to the development sector?`, options: ["a. Imported technology is always safer to use", `b. Grassroots re-engineering can bypass capital-intensive chains`, "c. Industrial automation cannot solve health hurdles", "d. Organic matter degrades too quickly for structural use"], ans: "b" }
+        ];
+    }
+    else if (grade === "Grade 7") {
+        const mon = selectRandom(pool.monuments);
+        const mech = selectRandom(pool.mechanics);
+        const ele = selectRandom(pool.elements);
+        const themes = selectRandom(pool.titleThemes);
+        
+        title = `${themes} ${mon}`;
+        story = `The architectural architecture of ${mon} highlights an advanced pre-modern mastery of ${mech}. Built centuries ago across unstable terrain, these massive systems utilize an organic ${ele} network. This design distributes structural gravity loads and subterranean pressure lines uniformly, minimizing soil erosion risks during peak seasonal rainfall events and validating low-impact regional design choices.`;
+        
+        questions = [
+            { q: `Which cultural or engineering landmark is evaluated in the text?`, options: [`a. ${mon}`, "b. The San Juanico steel span", "c. Intramuros defense bastions", "d. The Magellan Cross pavilion stone"], ans: "a" },
+            { q: `The structural architecture of this monument shows a mastery of which field?`, options: ["a. Metallurgy and heat treating", `b. ${mech}`, "c. Nautical navigation matrices", "d. Dynamic thermodynamic gas systems"], ans: "b" },
+            { q: `What structural network ensures uniform load distribution across the terrain?`, options: ["a. Reinforced concrete pillar links", "b. Heavy iron suspension brackets", `c. An organic ${ele} network`, "d. High-tension steel cables"], ans: "c" },
+            { q: `What specific environmental hazard is minimized by this unique design layout?`, options: [`a. Soil erosion risks during peak rainfall events`, "b. Surface cracking from sudden freezing temperatures", "c. Marine saltwater intrusion into village wells", "d. Airborne dust dispersion from open plain fields"], ans: "a" },
+            { q: `When was this massive infrastructural system originally constructed?`, options: ["a. During the mid-twentieth century", `b. Centuries ago across unstable terrain`, "c. In a modern specialized industrial laboratory", "d. Right after the latest regional earthquake event"], ans: "b" }
+        ];
+    }
+    else if (grade === "Grade 8") {
+        const fld = selectRandom(pool.fields);
+        const art = selectRandom(pool.artifacts);
+        const dsc = selectRandom(pool.discoveries);
+        const concept = selectRandom(pool.titleConcept);
+        
+        let titleField = fld.split(' ').map(w => (w === "and" || w === "in" || w === "within") ? w : w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        title = `${concept} ${titleField}`;
+        story = `Academic research within the parameters of ${fld} expanded dramatically following the excavation of several ${art}. Comprehensive multi-spectral parsing immediately ${dsc}. By validating these ancient data metrics against modern computer simulations, the research team successfully updated previous assumptions regarding early migratory timelines and agricultural resource distribution maps.`;
+        
+        questions = [
+            { q: `Which academic or scientific specialization is discussed in the passage?`, options: ["a. Deep-sea volcanic geology", "b. Quantum particle mechanics", `c. The parameters of ${fld}`, "d. Modern financial asset tracking"], ans: "c" },
+            { q: `What physical discoveries provided the core evidence for this research shift?`, options: [`a. Excavation of several ${art}`, "b. Fossilized deep-sea organisms", "c. Subterranean iron ore fields", "d. Remnants of colonial military armor"], ans: "a" },
+            { q: `What primary analytical breakthrough was achieved through multi-spectral parsing?`, options: [`a. It immediately ${dsc}`, "b. It refuted early hominid dental records", "c. It mapped regional plate tectonic shifts", "d. It calculated solar radiation variance caps"], ans: "a" },
+            { q: `What modern method was used to validate the newly found ancient data metrics?`, options: ["a. Cross-checking manual trade bookkeeping ledgers", `b. Modern computer simulations`, "c. Microscopic visual analysis of soil depth scales", "d. Standard public opinion surveys among communities"], ans: "b" },
+            { q: `Which historical understanding was updated because of the team's research?`, options: [`a. Early migratory timelines and agricultural resource distribution maps`, "b. The exact chemical configuration of ancient armor sets", "c. Deep ocean geological pressure parameters near faults", "d. Language dialect variations across urban trading centers"], ans: "a" }
+        ];
+    }
+    else if (grade === "Grade 9") {
+        const disc = selectRandom(pool.disciplines);
+        const cat = selectRandom(pool.catalysts);
+        const res = selectRandom(pool.results);
+        const structures = selectRandom(pool.titleStructures);
+        
+        let titleDisc = disc.split(' ').map(w => (w === "and" || w === "in" || w === "within" || w === "of") ? w : w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        title = `${structures} ${titleDisc}`;
+        story = `Empirical papers focusing on ${disc} indicate that ${cat} operates as the primary biochemical driver for ${res}. This systematic process suggests that homeostatic stability requires a non-linear series of internal chemical re-alignments. Rather than following gradualist evolutionary paths, these localized adjustments allow complex biological networks to withstand sudden external resource constraints and environmental threats.`;
+        
+        questions = [
+            { q: `What scientific domain provides the conceptual framework for this analysis?`, options: ["a. Astro-physics propulsion dynamics", `b. Empirical papers focusing on ${disc}`, "c. Architectural acoustics tracking", "d. Algorithmic software encryption laws"], ans: "b" },
+            { q: `According to the research, what serves as the primary biochemical driver?`, options: [`a. The mechanism of ${cat}`, "b. Gradual macro climate cycles", "c. Artificial radiation exposures", "d. Random genetic drift across borders"], ans: "a" },
+            { q: `What direct physiological or structural result is caused by this primary catalyst?`, options: ["a. High rates of cellular decay", "b. Gradual loss of regulatory functions", `c. The generation of ${res}`, "d. Absolute termination of cellular transport"], ans: "c" },
+            { q: `What does this systematic biochemical process imply about homeostatic stability?`, options: ["a. It can be easily maintained without shifting internal metrics", `b. It requires a non-linear series of internal chemical re-alignments`, "c. It follows a completely predictable, static timeline structure", "d. It depends entirely on external technological intervention tools"], ans: "b" },
+            { q: `What major advantage do these localized structural adjustments offer to biological networks?`, options: [`a. The ability to withstand sudden external constraints and threats`, "b. Accelerated growth patterns across plain territories", "c. Elimination of metabolic requirements inside cell units", "d. Seamless conversion of heavy mineral elements to energy"], ans: "a" }
+        ];
+    }
+    else {
+        const sys = selectRandom(pool.systems);
+        const chal = selectRandom(pool.challenges);
+        const frm = selectRandom(pool.frameworks);
+        const finalTitle = selectRandom(pool.titleFinal);
+        
+        let titleSys = sys.split(' ').map(w => (w === "and" || w === "in" || w === "within" || w === "of" || w === "for") ? w : w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        title = `${finalTitle} ${titleSys}`;
+        story = `The institutional implementation of ${sys} creates unprecedented legal friction regarding traditional ${chal}. Because classic administrative monitoring models rely strictly on geographic boundaries, they are structurally unequipped to regulate borderless asset ledgers. Consequently, legal theorists are prioritizing alternative ${frm} to protect civil liberties while maintaining institutional accountability in decentralized digital spaces.`;
+        
+        questions = [
+            { q: `What technological or operational system is being examined?`, options: ["a. Centralized maritime cargo routing", `b. The institutional implementation of ${sys}`, "c. National electric grid distribution hubs", "d. High-frequency analog broadcast towers"], ans: "b" },
+            { q: `What core regulatory friction point is introduced by this architecture?`, options: [`a. Legal friction regarding traditional ${chal}`, "b. Severe power grid drops during peak times", "c. High physical construction and labor costs", "d. Incompatibilities with common text fonts"], ans: "a" },
+            { q: `What solution are legal theorists prioritizing to handle these decentralized systems?`, options: ["a. Returning to paper-based tracking methods", "b. Expanding national military border zones", `c. Deploying alternative ${frm}`, "d. Completely banning distributed protocol networks"], ans: "c" },
+            { q: `Why are classic administrative monitoring models failing to track these assets?`, options: ["a. They require massive hardware cooling installations to run", `b. They rely strictly on static geographic borders`, "c. They are restricted by international space laws", "d. They lack funding from regional commercial syndicates"], ans: "b" },
+            { q: `What two competing social values must the proposed legal frameworks balance?`, options: [`a. Protecting civil liberties while maintaining institutional accountability`, "b. Reducing engineering costs while maximizing structural data speeds", "c. Accelerating local trade volumes while enforcing state resource caps", "d. Expanding student access while minimizing educational software footprints"], ans: "a" }
+        ];
+    }
+
+    return { title: title, story: story, questions: questions };
+}
+
+function shuffleArray(arr) {
+    return arr.sort(() => 0.5 - Math.random());
+}
+
+function generateMaterial() {
+    const grade = document.getElementById("gradeSelect").value;
+    const resourceType = document.getElementById("resourceSelect").value;
+    const previewArea = document.getElementById("outputPreview");
+    
+    const isYoung = ["Kinder", "Grade 1", "Grade 2", "Grade 3"].includes(grade);
+    const fontClass = isYoung ? "size-young" : "size-older";
+    previewArea.className = "output-preview " + fontClass;
+    
+    let html = `
+        <div style="text-align: center; margin-bottom: 35px; border-bottom: 2px solid #1e3a8a; padding-bottom: 12px;">
+            <h2 style="margin: 0; color: #1e3a8a; font-size: 22px; text-transform: uppercase;">LEARNING WORKSHEET AND ASSESSMENT PLATFORM</h2>
+        </div>
+    `;
+
+    if (phonicsPools[resourceType]) {
+        let labelName = resourceType.replace("fam-", "SHORT VOWEL WORD FAMILY: -").toUpperCase();
+        if(resourceType.startsWith("long-")) {
+            labelName = "LONG VOWEL SOUND STRUCTURE: " + resourceType.split("-")[1].toUpperCase();
+        } else if(!resourceType.startsWith("fam-")) {
+            labelName = resourceType.toUpperCase() + " STRUCTURES";
+        }
+        
+        let pool = [...phonicsPools[resourceType]];
+        while(pool.length < 20) { pool = pool.concat(pool); } 
+        let selectedWords = shuffleArray(pool).slice(0, 20).map(w => w.toLowerCase());
+
+        html += `
+            <div class="material-section">
+                <div class="material-title">${labelName}</div>
+                <p style="margin-top:0; margin-bottom: 20px; color:#475569; font-style:italic;">Practice decoding exactly twenty distributed vocabulary items below:</p>
+                <div class="word-grid">
+                    <div class="word-row">${selectedWords.slice(0, 4).map(w => `<div class="word-cell">${w}</div>`).join('')}</div>
+                    <div class="word-row">${selectedWords.slice(4, 8).map(w => `<div class="word-cell">${w}</div>`).join('')}</div>
+                    <div class="word-row">${selectedWords.slice(8, 12).map(w => `<div class="word-cell">${w}</div>`).join('')}</div>
+                    <div class="word-row">${selectedWords.slice(12, 16).map(w => `<div class="word-cell">${w}</div>`).join('')}</div>
+                    <div class="word-row">${selectedWords.slice(16, 20).map(w => `<div class="word-cell">${w}</div>`).join('')}</div>
+                </div>
+            </div>
+        `;
+    } 
+    else if (resourceType === "phrases") {
+        let pool = [...stringArrays[grade].phrases];
+        let selectedPhrases = shuffleArray(pool).slice(0, 20).map(p => p.toLowerCase());
+
+        html += `
+            <div class="material-section">
+                <div class="material-title">Target Instructional Phrases (20 Items)</div>
+                <p style="margin-top:0; margin-bottom: 20px; color:#475569; font-style:italic;">Practice accurate reading on exactly twenty items:</p>
+                <ol class="list-distributed">
+                    ${selectedPhrases.map(p => `<li>${p}</li>`).join('')}
+                </ol>
+            </div>
+        `;
+    } 
+    else if (resourceType === "sentences") {
+        let pool = [...stringArrays[grade].sentences];
+        let selectedSentences = shuffleArray(pool).slice(0, 20);
+
+        html += `
+            <div class="material-section">
+                <div class="material-title">Sentence Fluency Exercises (20 Items)</div>
+                <p style="margin-top:0; margin-bottom: 20px; color:#475569; font-style:italic;">Read each structured sentence statement carefully:</p>
+                <ol class="list-distributed">
+                    ${selectedSentences.map(s => `<li>${s}</li>`).join('')}
+                </ol>
+            </div>
+        `;
+    } 
+    else if (resourceType === "short-stories") {
+        const generatedMaterial = generateDynamicStory(grade);
+
+        html += `
+            <div class="material-section">
+                <div class="material-title">Dynamic Reading Literacy Assessment (${grade})</div>
+                <div style="text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 1.3em; letter-spacing:0.5px; color:#1e3a8a;">${generatedMaterial.title}</div>
+                <div class="story-box">
+                    "${generatedMaterial.story}"
+                </div>
+                <div class="comprehension-questions">
+                    <div style="font-weight: bold; margin-bottom: 15px; color: #1e3a8a; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px;">
+                        Comprehension Check | Format: Multiple Choice Assessment
+                    </div>
+                    ${generatedMaterial.questions.map((qObj, idx) => {
+                        let questionHtml = `
+                            <div class="question-item">
+                                <div><strong>${idx + 1}. ${qObj.q}</strong></div>
+                                <div class="options-block">
+                        `;
+                        qObj.options.forEach(opt => {
+                            questionHtml += `<div class="option-item">${opt}</div>`;
+                        });
+                        questionHtml += `
+                                </div>
+                            </div>
+                        `;
+                        return questionHtml;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    previewArea.innerHTML = html;
+}
+
+function exportToPDF() {
+    window.print();
+}
+</script>
+
+</body>
+</html>
